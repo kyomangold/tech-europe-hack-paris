@@ -15,8 +15,6 @@ async def upload_study_material(file_path):
     file_handle = tutor_agent.files.upload(file_path)
     return file_handle
 
-
-
 # 1. Function tools as plain async or sync functions
 @function_tool
 def generate_topic_summary(document_text: str, user_input: str) -> str:
@@ -41,6 +39,18 @@ def generate_study_plan(topic_description: str) -> str:
         f"Create a study plan for this topic:\n\n{topic_description}\n\n"
         "List 3–5 high-level lessons, each with a short description."
     )
+    
+@function_tool
+def generate_topic_title(document_text: str, user_input: str) -> str:
+    """
+    Given study material and a user's goal, generate a concise, academic-sounding topic title.
+    The title should be a single word or short phrase, e.g., 'Trigonometry', 'Gradient Descent', 'Schrödinger Equation'.
+    """
+    return (
+        f"Given the following study material:\n\n{document_text}\n\n"
+        f"And the user's learning goal: '{user_input}',\n"
+        "Suggest a single-word or short academic phrase as a topic title, e.g., 'Trigonometry', 'Gradient Descent', or 'Schrödinger Equation'."
+    )
 
 # 2. Define the agent with tools (hosted and function tools together)
 tutor_agent = Agent(
@@ -49,7 +59,8 @@ tutor_agent = Agent(
     tools=[
         "web-search",                 # hosted tool: web search
         generate_topic_summary,       # your Python function tool
-        generate_study_plan           # your Python function tool
+        generate_study_plan,           # your Python function tool
+        generate_topic_title          # your Python function tool
     ],
     model="gpt-4o"
 )
@@ -90,5 +101,17 @@ async def call_generate_study_plan(topic_description: str):
     )
     return result.final_output
 
-# 4. File upload (handled separately—see OpenAI SDK for uploading/storing files)
-# This depends on your workflow; for file-based retrieval, see FileSearchTool in the docs.
+async def call_generate_topic_title(document_text: str, user_input: str):
+    """Call the topic title tool directly (function tool)."""
+    result = await Runner.run(
+        tutor_agent,
+        input=f"Suggest a topic title.",
+        tool_calls=[{
+            "tool_name": "generate_topic_title",
+            "args": {
+                "document_text": document_text,
+                "user_input": user_input
+            }
+        }]
+    )
+    return result.final_output
