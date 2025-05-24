@@ -52,8 +52,67 @@ type StudySession = {
   mastery_score: number;
 };
 
+type Topic = {
+  id: number;
+  name: string;
+  description: string | null;
+  study_hours: number;
+  session_count: number;
+  day_streak: number;
+  overall_progress: number;
+};
+
 export default function Page() {
   const [room] = useState(new Room());
+  const [topics, setTopics] = useState<Topic[]>([]);
+
+  // Fetch topics data
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/topics');
+        if (!response.ok) {
+          throw new Error('Failed to fetch topics');
+        }
+        const data = await response.json();
+        setTopics(data);
+      } catch (error) {
+        console.error('Error fetching topics:', error);
+        // Mock data for development
+        setTopics([
+          {
+            id: 1,
+            name: "TODO Trigonometry",
+            description: null,
+            study_hours: 5.5,
+            session_count: 7,
+            day_streak: 3,
+            overall_progress: 0.78
+          },
+          {
+            id: 2,
+            name: "TODO Linear Algebra",
+            description: null,
+            study_hours: 3.2,
+            session_count: 4,
+            day_streak: 1,
+            overall_progress: 0.45
+          },
+          {
+            id: 3,
+            name: "TODO Calculus",
+            description: null,
+            study_hours: 6,
+            session_count: 0,
+            day_streak: 0,
+            overall_progress: 0
+          }
+        ]);
+      }
+    };
+
+    fetchTopics();
+  }, []);
 
   const onConnectButtonClicked = useCallback(async () => {
     // Generate room connection details, including:
@@ -100,18 +159,14 @@ export default function Page() {
               </div>
 
               <div className="flex flex-col gap-4">
-                <div className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
-                  <h3 className="text-lg font-bold mb-2 text-amber-900">TODO - Topic Title</h3>
-                  <p className="text-sm text-amber-800">TODO - Topic Description</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
-                  <h3 className="text-lg font-bold mb-2 text-amber-900">TODO - Topic Title</h3>
-                  <p className="text-sm text-amber-800">TODO - Topic Description</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
-                  <h3 className="text-lg font-bold mb-2 text-amber-900">TODO - Topic Title</h3>
-                  <p className="text-sm text-amber-800">TODO - Topic Description</p>
-                </div>
+                {topics.map((topic) => (
+                  <div key={topic.id} className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
+                    <h3 className="text-lg font-bold mb-2 text-amber-900">{topic.name}</h3>
+                    <p className="text-sm text-amber-700">
+                      {topic.session_count} sessions • {topic.study_hours.toFixed(1)} hours • {Math.round(topic.overall_progress * 100)}% complete
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
 

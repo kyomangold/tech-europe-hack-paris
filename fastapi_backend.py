@@ -5,12 +5,8 @@ import sqlite3
 from pydantic import BaseModel
 import datetime
 
-from agents_openai import (
-    upload_study_material,
-    give_more_info,
-    call_generate_topic_summary,
-    call_generate_study_plan
-)
+from agents_openai import upload_study_material, give_more_info, call_generate_topic_summary, call_generate_study_plan
+
 
 
 
@@ -57,7 +53,7 @@ async def api_new_topic(
 @app.post("/api/study-planner")
 async def api_study_planner(topic_description: str = Form(...)):
     plan = await call_generate_study_plan(topic_description)
-    return {"plan": plan}
+    return {"plan": plan}
 """
 
 # Database path
@@ -71,6 +67,15 @@ class StudySession(BaseModel):
     session_datetime: str
     length_minutes: int
     mastery_score: float
+
+class Topic(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    study_hours: float
+    session_count: int
+    day_streak: int
+    overall_progress: float
 
 # Utility function to fetch sessions from DB
 def get_all_study_sessions() -> List[StudySession]:
@@ -90,12 +95,50 @@ def get_all_study_sessions() -> List[StudySession]:
     finally:
         conn.close()
 
+# Utility function to fetch topics from DB
+def get_all_topics() -> List[Topic]:
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT 
+                id,
+                name,
+                description,
+                study_hours,
+                session_count,
+                day_streak,
+                overall_progress
+            FROM topics
+        """)
+        rows = cursor.fetchall()
+        return [Topic(
+            id=row[0],
+            name=row[1],
+            description=row[2],
+            study_hours=row[3],
+            session_count=row[4],
+            day_streak=row[5],
+            overall_progress=row[6]
+        ) for row in rows]
+    finally:
+        conn.close()
+
 # Endpoint: /api/study-sessions
 @app.get("/api/study-sessions", response_model=List[StudySession])
 def read_study_sessions():
     try:
         sessions = get_all_study_sessions()
         return sessions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Endpoint: /api/topics
+@app.get("/api/topics", response_model=List[Topic])
+def read_topics():
+    try:
+        topics = get_all_topics()
+        return topics
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
