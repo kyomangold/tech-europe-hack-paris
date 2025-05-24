@@ -141,6 +141,11 @@ export default function Page() {
       fetchCurrentTopic(topicId),
       fetchTopicProgress(topicId)
     ]);
+
+    // Dispatch custom event for topic change
+    window.dispatchEvent(new CustomEvent('topicChange', {
+      detail: { topicId }
+    }));
   };
 
   // Fetch topics data
@@ -536,113 +541,122 @@ function StudyProgressCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [studyGoals, setStudyGoals] = useState<StudyGoal[]>([]);
   const [improvementAreas, setImprovementAreas] = useState<ImprovementArea[]>([]);
-  const [studyMetrics, setStudyMetrics] = useState<StudyMetric[]>([]);
+  const [studyMetrics, setStudyMetrics] = useState<StudyMetric | null>(null);
   const [studySessions, setStudySessions] = useState<StudySession[]>([]);
   const [hoveredSession, setHoveredSession] = useState<StudySession | null>(null);
 
   // Fetch data from API endpoints
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [goalsRes, improvementRes, metricsRes, sessionsRes] = await Promise.all([
-          fetch('/api/study-goals'),
-          fetch('/api/improvement-areas'),
-          fetch('/api/study-metrics'),
-          fetch('/api/study-sessions')
-        ]);
+  const fetchData = async (topicId?: number) => {
+    try {
+      const baseUrl = 'http://localhost:8000';
+      const params = topicId ? `?topic_id=${topicId}` : '';
 
-        if (!goalsRes.ok || !improvementRes.ok || !metricsRes.ok || !sessionsRes.ok) {
-          throw new Error('Failed to fetch data');
+      const [goalsRes, improvementRes, metricsRes, sessionsRes] = await Promise.all([
+        fetch(`${baseUrl}/api/study-goals${params}`),
+        fetch(`${baseUrl}/api/improvement-areas${params}`),
+        fetch(`${baseUrl}/api/study-metrics${params}`),
+        fetch(`${baseUrl}/api/study-sessions${params}`)
+      ]);
+
+      if (!goalsRes.ok || !improvementRes.ok || !metricsRes.ok || !sessionsRes.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
+      const [goals, improvement, metrics, sessions] = await Promise.all([
+        goalsRes.json(),
+        improvementRes.json(),
+        metricsRes.json(),
+        sessionsRes.json()
+      ]);
+
+      setStudyGoals(goals);
+      setImprovementAreas(improvement);
+      setStudyMetrics(metrics);
+      setStudySessions(sessions);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      // Set mock data for development
+      setStudyGoals([
+        {
+          id: 1,
+          lesson_id: 2,
+          lesson_title: "Learn about sine",
+          goal_description: "Understand amplitude",
+          test_done: true,
+          status: "complete"
+        },
+        {
+          id: 2,
+          lesson_id: 2,
+          lesson_title: "Learn about sine",
+          goal_description: "Understand phase",
+          test_done: false,
+          status: "pending"
         }
+      ]);
+      setImprovementAreas([
+        {
+          lesson_id: 3,
+          lesson_title: "Understand cosine",
+          topic_name: "Trigonometry",
+          progress: 0.45,
+          missing_goals: 2
+        },
+        {
+          lesson_id: 5,
+          lesson_title: "Matrix multiplication",
+          topic_name: "Linear Algebra",
+          progress: 0.30,
+          missing_goals: 1
+        }
+      ]);
+      setStudyMetrics({
+        topic_id: 1,
+        topic_name: "Trigonometry",
+        study_hours: 5.5,
+        session_count: 7,
+        day_streak: 3,
+        overall_progress: 0.78
+      });
+      setStudySessions([
+        {
+          id: 101,
+          topic_id: 1,
+          lesson_id: 2,
+          session_datetime: "2025-05-24T20:00:00",
+          length_minutes: 45,
+          mastery_score: 0.85
+        },
+        {
+          id: 102,
+          topic_id: 1,
+          lesson_id: 3,
+          session_datetime: "2025-05-23T18:30:00",
+          length_minutes: 30,
+          mastery_score: 0.75
+        }
+      ]);
+    }
+  };
 
-        const [goals, improvement, metrics, sessions] = await Promise.all([
-          goalsRes.json(),
-          improvementRes.json(),
-          metricsRes.json(),
-          sessionsRes.json()
-        ]);
+  // Initial data fetch
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-        setStudyGoals(goals);
-        setImprovementAreas(improvement);
-        setStudyMetrics(metrics);
-        setStudySessions(sessions);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        // Set mock data for development
-        setStudyGoals([
-          {
-            id: 1,
-            lesson_id: 2,
-            lesson_title: "Learn about sine",
-            goal_description: "Understand amplitude",
-            test_done: true,
-            status: "complete"
-          },
-          {
-            id: 2,
-            lesson_id: 2,
-            lesson_title: "Learn about sine",
-            goal_description: "Understand phase",
-            test_done: false,
-            status: "pending"
-          }
-        ]);
-        setImprovementAreas([
-          {
-            lesson_id: 3,
-            lesson_title: "Understand cosine",
-            topic_name: "Trigonometry",
-            progress: 0.45,
-            missing_goals: 2
-          },
-          {
-            lesson_id: 5,
-            lesson_title: "Matrix multiplication",
-            topic_name: "Linear Algebra",
-            progress: 0.30,
-            missing_goals: 1
-          }
-        ]);
-        setStudyMetrics([
-          {
-            topic_id: 1,
-            topic_name: "Trigonometry",
-            study_hours: 5.5,
-            session_count: 7,
-            day_streak: 3,
-            overall_progress: 0.78
-          },
-          {
-            topic_id: 2,
-            topic_name: "Linear Algebra",
-            study_hours: 3.2,
-            session_count: 4,
-            day_streak: 1,
-            overall_progress: 0.45
-          }
-        ]);
-        setStudySessions([
-          {
-            id: 101,
-            topic_id: 1,
-            lesson_id: 2,
-            session_datetime: "2025-05-24T20:00:00",
-            length_minutes: 45,
-            mastery_score: 0.85
-          },
-          {
-            id: 102,
-            topic_id: 1,
-            lesson_id: 3,
-            session_datetime: "2025-05-23T18:30:00",
-            length_minutes: 30,
-            mastery_score: 0.75
-          }
-        ]);
+  // Listen for topic changes
+  useEffect(() => {
+    const handleTopicChange = (event: CustomEvent) => {
+      const topicId = event.detail.topicId;
+      if (topicId) {
+        fetchData(topicId);
       }
     };
 
-    fetchData();
+    window.addEventListener('topicChange', handleTopicChange as EventListener);
+    return () => {
+      window.removeEventListener('topicChange', handleTopicChange as EventListener);
+    };
   }, []);
 
   const slides = [
@@ -654,8 +668,7 @@ function StudyProgressCarousel() {
             <div key={goal.id} className="p-3 bg-amber-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${goal.status === "complete" ? 'bg-green-500 border-green-600' : 'border-amber-400'
-                    }`}>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${goal.status === "complete" ? 'bg-green-500 border-green-600' : 'border-amber-400'}`}>
                     {goal.status === "complete" && (
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
@@ -710,29 +723,29 @@ function StudyProgressCarousel() {
       title: "Study Metrics",
       content: (
         <div className="space-y-3">
-          {studyMetrics.map((metric) => (
-            <div key={metric.topic_id} className="p-3 bg-amber-50 rounded-lg">
-              <h4 className="font-medium text-amber-900 mb-2">{metric.topic_name}</h4>
+          {studyMetrics && (
+            <div className="p-3 bg-amber-50 rounded-lg">
+              <h4 className="font-medium text-amber-900 mb-2">{studyMetrics.topic_name}</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-amber-700">
                   <span className="block font-medium">Study Hours</span>
-                  <span>{metric.study_hours}h</span>
+                  <span>{studyMetrics.study_hours}h</span>
                 </div>
                 <div className="text-amber-700">
                   <span className="block font-medium">Sessions</span>
-                  <span>{metric.session_count}</span>
+                  <span>{studyMetrics.session_count}</span>
                 </div>
                 <div className="text-amber-700">
                   <span className="block font-medium">Day Streak</span>
-                  <span>{metric.day_streak} days</span>
+                  <span>{studyMetrics.day_streak} days</span>
                 </div>
                 <div className="text-amber-700">
                   <span className="block font-medium">Progress</span>
-                  <span>{Math.round(metric.overall_progress * 100)}%</span>
+                  <span>{Math.round(studyMetrics.overall_progress * 100)}%</span>
                 </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
       )
     },
@@ -868,8 +881,7 @@ function StudyProgressCarousel() {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-colors ${currentSlide === index ? 'bg-amber-600' : 'bg-amber-200'
-              }`}
+            className={`w-2 h-2 rounded-full transition-colors ${currentSlide === index ? 'bg-amber-600' : 'bg-amber-200'}`}
           />
         ))}
       </div>

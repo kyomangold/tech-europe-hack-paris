@@ -290,6 +290,170 @@ def get_next_up_topics():
     finally:
         conn.close()
 
+# Endpoint: /api/study-goals
+@app.get("/api/study-goals")
+def get_study_goals(topic_id: int = None):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # If topic_id is provided, get goals for that topic, otherwise get goals for current topic
+        if topic_id is not None:
+            cursor.execute("""
+                SELECT 
+                    g.id,
+                    g.lesson_id,
+                    l.title as lesson_title,
+                    g.description as goal_description,
+                    g.test_done,
+                    g.status
+                FROM goals g
+                JOIN lessons l ON g.lesson_id = l.id
+                WHERE l.topic_id = ?
+                ORDER BY g.id DESC
+            """, (topic_id,))
+        else:
+            cursor.execute("""
+                SELECT 
+                    g.id,
+                    g.lesson_id,
+                    l.title as lesson_title,
+                    g.description as goal_description,
+                    g.test_done,
+                    g.status
+                FROM goals g
+                JOIN lessons l ON g.lesson_id = l.id
+                WHERE l.topic_id = (
+                    SELECT id FROM topics 
+                    ORDER BY overall_progress DESC, study_hours DESC 
+                    LIMIT 1
+                )
+                ORDER BY g.id DESC
+            """)
+        
+        rows = cursor.fetchall()
+        return [{
+            "id": row[0],
+            "lesson_id": row[1],
+            "lesson_title": row[2],
+            "goal_description": row[3],
+            "test_done": bool(row[4]),
+            "status": row[5]
+        } for row in rows]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+# Endpoint: /api/improvement-areas
+@app.get("/api/improvement-areas")
+def get_improvement_areas(topic_id: int = None):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # If topic_id is provided, get improvement areas for that topic, otherwise get for current topic
+        if topic_id is not None:
+            cursor.execute("""
+                SELECT 
+                    l.id as lesson_id,
+                    l.title as lesson_title,
+                    t.name as topic_name,
+                    l.progress,
+                    COUNT(g.id) - COUNT(CASE WHEN g.status = 'complete' THEN 1 END) as missing_goals
+                FROM lessons l
+                JOIN topics t ON l.topic_id = t.id
+                LEFT JOIN goals g ON l.id = g.lesson_id
+                WHERE t.id = ?
+                GROUP BY l.id, l.title, t.name, l.progress
+                HAVING l.progress < 1
+                ORDER BY l.progress ASC
+            """, (topic_id,))
+        else:
+            cursor.execute("""
+                SELECT 
+                    l.id as lesson_id,
+                    l.title as lesson_title,
+                    t.name as topic_name,
+                    l.progress,
+                    COUNT(g.id) - COUNT(CASE WHEN g.status = 'complete' THEN 1 END) as missing_goals
+                FROM lessons l
+                JOIN topics t ON l.topic_id = t.id
+                LEFT JOIN goals g ON l.id = g.lesson_id
+                WHERE t.id = (
+                    SELECT id FROM topics 
+                    ORDER BY overall_progress DESC, study_hours DESC 
+                    LIMIT 1
+                )
+                GROUP BY l.id, l.title, t.name, l.progress
+                HAVING l.progress < 1
+                ORDER BY l.progress ASC
+            """)
+        
+        rows = cursor.fetchall()
+        return [{
+            "lesson_id": row[0],
+            "lesson_title": row[1],
+            "topic_name": row[2],
+            "progress": row[3],
+            "missing_goals": row[4]
+        } for row in rows]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+# Endpoint: /api/study-metrics
+@app.get("/api/study-metrics")
+def get_study_metrics(topic_id: int = None):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # If topic_id is provided, get metrics for that topic, otherwise get for current topic
+        if topic_id is not None:
+            cursor.execute("""
+                SELECT 
+                    t.id as topic_id,
+                    t.name as topic_name,
+                    t.study_hours,
+                    t.session_count,
+                    t.day_streak,
+                    t.overall_progress
+                FROM topics t
+                WHERE t.id = ?
+            """, (topic_id,))
+        else:
+            cursor.execute("""
+                SELECT 
+                    t.id as topic_id,
+                    t.name as topic_name,
+                    t.study_hours,
+                    t.session_count,
+                    t.day_streak,
+                    t.overall_progress
+                FROM topics t
+                WHERE t.id = (
+                    SELECT id FROM topics 
+                    ORDER BY overall_progress DESC, study_hours DESC 
+                    LIMIT 1
+                )
+            """)
+        
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="No topics found")
+            
+        return {
+            "topic_id": row[0],
+            "topic_name": row[1],
+            "study_hours": row[2],
+            "session_count": row[3],
+            "day_streak": row[4],
+            "overall_progress": row[5]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
 # Skeleton Endpoints
 @app.get("/api/connection-details")
 def get_connection_details():
