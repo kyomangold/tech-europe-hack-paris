@@ -17,6 +17,38 @@ import { Room, RoomEvent } from "livekit-client";
 import { useCallback, useEffect, useState } from "react";
 import type { ConnectionDetails } from "./api/connection-details/route";
 
+// Add these types before the StudyProgressCarousel component
+type StudyGoal = {
+  id: string;
+  title: string;
+  targetDate: string;
+  progress: number;
+};
+
+type ImprovementArea = {
+  id: string;
+  topic: string;
+  currentLevel: number;
+  targetLevel: number;
+  description: string;
+};
+
+type StudyMetric = {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  trend: 'up' | 'down' | 'stable';
+};
+
+type StudySession = {
+  id: string;
+  date: string;
+  mastery: number;
+  duration: number;
+  topic: string;
+};
+
 export default function Page() {
   const [room] = useState(new Room());
 
@@ -316,43 +348,177 @@ function onDeviceFailure(error: Error) {
 
 function StudyProgressCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [studyGoals, setStudyGoals] = useState<StudyGoal[]>([]);
+  const [improvementAreas, setImprovementAreas] = useState<ImprovementArea[]>([]);
+  const [studyMetrics, setStudyMetrics] = useState<StudyMetric[]>([]);
+  const [studySessions, setStudySessions] = useState<StudySession[]>([]);
+  const [hoveredSession, setHoveredSession] = useState<StudySession | null>(null);
+
+  // Fetch data from endpoints
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // In a real app, these would be actual API endpoints
+        const goalsResponse = await fetch('/api/study-goals');
+        const goalsData = await goalsResponse.json();
+        setStudyGoals(goalsData);
+
+        const areasResponse = await fetch('/api/improvement-areas');
+        const areasData = await areasResponse.json();
+        setImprovementAreas(areasData);
+
+        const metricsResponse = await fetch('/api/study-metrics');
+        const metricsData = await metricsResponse.json();
+        setStudyMetrics(metricsData);
+
+        const sessionsResponse = await fetch('/api/study-sessions');
+        const sessionsData = await sessionsResponse.json();
+        setStudySessions(sessionsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Set mock data for development
+        setStudyGoals([
+          { id: '1', title: 'Complete ML Basics', targetDate: '2024-04-01', progress: 60 },
+          { id: '2', title: 'Master Neural Networks', targetDate: '2024-05-01', progress: 30 },
+        ]);
+        setImprovementAreas([
+          { id: '1', topic: 'Linear Algebra', currentLevel: 3, targetLevel: 5, description: 'Need more practice with matrix operations' },
+          { id: '2', topic: 'Statistics', currentLevel: 4, targetLevel: 5, description: 'Focus on probability distributions' },
+        ]);
+        setStudyMetrics([
+          { id: '1', name: 'Study Hours', value: 45, unit: 'hours', trend: 'up' },
+          { id: '2', name: 'Practice Problems', value: 120, unit: 'problems', trend: 'up' },
+        ]);
+        setStudySessions([
+          { id: '1', date: '2024-03-01', mastery: 0.8, duration: 60, topic: 'ML Basics' },
+          { id: '2', date: '2024-03-02', mastery: 0.6, duration: 45, topic: 'Neural Networks' },
+          { id: '3', date: '2024-03-03', mastery: 0.9, duration: 90, topic: 'ML Basics' },
+        ]);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const slides = [
     {
-      title: "Study Progress",
-      icon: (
-        <svg className="w-16 h-16 mx-auto mb-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-      description: "Overall study progress and completion rates"
+      title: "Study Goals",
+      content: (
+        <div className="space-y-4">
+          {studyGoals.map((goal) => (
+            <div key={goal.id} className="p-3 bg-amber-50 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-medium text-amber-900">{goal.title}</h4>
+                <span className="text-sm text-amber-700">Target: {new Date(goal.targetDate).toLocaleDateString()}</span>
+              </div>
+              <div className="h-2 bg-amber-100 rounded-full">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
+                  style={{ width: `${goal.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )
     },
     {
-      title: "Learning Patterns",
-      icon: (
-        <svg className="w-16 h-16 mx-auto mb-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-        </svg>
-      ),
-      description: "Analysis of your learning patterns and habits"
+      title: "Areas for Improvement",
+      content: (
+        <div className="space-y-4">
+          {improvementAreas.map((area) => (
+            <div key={area.id} className="p-3 bg-amber-50 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-medium text-amber-900">{area.topic}</h4>
+                <span className="text-sm text-amber-700">Level {area.currentLevel}/{area.targetLevel}</span>
+              </div>
+              <p className="text-sm text-amber-800">{area.description}</p>
+            </div>
+          ))}
+        </div>
+      )
     },
     {
-      title: "Topic Mastery",
-      icon: (
-        <svg className="w-16 h-16 mx-auto mb-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      description: "Your mastery level across different topics"
+      title: "Study Metrics",
+      content: (
+        <div className="space-y-4">
+          {studyMetrics.map((metric) => (
+            <div key={metric.id} className="p-3 bg-amber-50 rounded-lg">
+              <div className="flex justify-between items-center">
+                <h4 className="font-medium text-amber-900">{metric.name}</h4>
+                <span className="text-sm text-amber-700">
+                  {metric.value} {metric.unit}
+                  <span className={`ml-2 ${metric.trend === 'up' ? 'text-green-500' : metric.trend === 'down' ? 'text-red-500' : 'text-amber-500'}`}>
+                    {metric.trend === 'up' ? '↑' : metric.trend === 'down' ? '↓' : '→'}
+                  </span>
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
     },
     {
-      title: "Study Streak",
-      icon: (
-        <svg className="w-16 h-16 mx-auto mb-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
-      description: "Your current study streak and consistency"
+      title: "Progress Graph",
+      content: (
+        <div className="relative h-full">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-full h-full p-4">
+              <div className="relative w-full h-full">
+                {/* Y-axis labels */}
+                <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-amber-700">
+                  <span>100%</span>
+                  <span>75%</span>
+                  <span>50%</span>
+                  <span>25%</span>
+                  <span>0%</span>
+                </div>
+
+                {/* Graph area */}
+                <div className="absolute left-12 right-0 top-0 bottom-0">
+                  {/* Grid lines */}
+                  <div className="absolute inset-0 grid grid-rows-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="border-t border-amber-100" />
+                    ))}
+                  </div>
+
+                  {/* Data points */}
+                  <div className="absolute inset-0">
+                    {studySessions.map((session, index) => {
+                      const x = (index / (studySessions.length - 1)) * 100;
+                      const y = (1 - session.mastery) * 100;
+                      const color = session.mastery >= 0.7 ? 'bg-green-500' :
+                        session.mastery >= 0.4 ? 'bg-amber-500' :
+                          'bg-red-500';
+
+                      return (
+                        <div
+                          key={session.id}
+                          className={`absolute w-3 h-3 rounded-full ${color} transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-125`}
+                          style={{ left: `${x}%`, top: `${y}%` }}
+                          onMouseEnter={() => setHoveredSession(session)}
+                          onMouseLeave={() => setHoveredSession(null)}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tooltip */}
+          {hoveredSession && (
+            <div className="absolute bg-white p-2 rounded-lg shadow-lg text-sm">
+              <p className="font-medium text-amber-900">{hoveredSession.topic}</p>
+              <p className="text-amber-700">Mastery: {Math.round(hoveredSession.mastery * 100)}%</p>
+              <p className="text-amber-700">Duration: {hoveredSession.duration} min</p>
+              <p className="text-amber-700">{new Date(hoveredSession.date).toLocaleDateString()}</p>
+            </div>
+          )}
+        </div>
+      )
     }
   ];
 
@@ -373,11 +539,10 @@ function StudyProgressCarousel() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.5 }}
-          className="text-center h-full flex flex-col items-center justify-center"
+          className="h-full"
         >
-          {slides[currentSlide].icon}
-          <h3 className="text-xl font-bold text-amber-900 mb-2">{slides[currentSlide].title}</h3>
-          <p className="text-amber-800">{slides[currentSlide].description}</p>
+          <h3 className="text-xl font-bold text-amber-900 mb-4">{slides[currentSlide].title}</h3>
+          {slides[currentSlide].content}
         </motion.div>
       </AnimatePresence>
 
