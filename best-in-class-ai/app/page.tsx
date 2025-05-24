@@ -18,34 +18,38 @@ import type { ConnectionDetails } from "./api/connection-details/route";
 
 // Add these types before the StudyProgressCarousel component
 type StudyGoal = {
-  id: string;
-  title: string;
-  targetDate: string;
-  progress: number;
+  id: number;
+  lesson_id: number;
+  lesson_title: string;
+  goal_description: string;
+  test_done: boolean;
+  status: 'complete' | 'pending';
 };
 
 type ImprovementArea = {
-  id: string;
-  topic: string;
-  currentLevel: number;
-  targetLevel: number;
-  description: string;
+  lesson_id: number;
+  lesson_title: string;
+  topic_name: string;
+  progress: number;
+  missing_goals: number;
 };
 
 type StudyMetric = {
-  id: string;
-  name: string;
-  value: number;
-  unit: string;
-  trend: 'up' | 'down' | 'stable';
+  topic_id: number;
+  topic_name: string;
+  study_hours: number;
+  session_count: number;
+  day_streak: number;
+  overall_progress: number;
 };
 
 type StudySession = {
-  id: string;
-  date: string;
-  mastery: number;
-  duration: number;
-  topic: string;
+  id: number;
+  topic_id: number;
+  lesson_id: number;
+  session_datetime: string;
+  length_minutes: number;
+  mastery_score: number;
 };
 
 export default function Page() {
@@ -97,16 +101,16 @@ export default function Page() {
 
               <div className="flex flex-col gap-4">
                 <div className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
-                  <h3 className="text-lg font-bold mb-2 text-amber-900">Machine Learning Basics</h3>
-                  <p className="text-sm text-amber-800">Introduction to ML concepts and algorithms</p>
+                  <h3 className="text-lg font-bold mb-2 text-amber-900">TODO - Topic Title</h3>
+                  <p className="text-sm text-amber-800">TODO - Topic Description</p>
                 </div>
                 <div className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
-                  <h3 className="text-lg font-bold mb-2 text-amber-900">Neural Networks</h3>
-                  <p className="text-sm text-amber-800">Deep learning and neural network architectures</p>
+                  <h3 className="text-lg font-bold mb-2 text-amber-900">TODO - Topic Title</h3>
+                  <p className="text-sm text-amber-800">TODO - Topic Description</p>
                 </div>
                 <div className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
-                  <h3 className="text-lg font-bold mb-2 text-amber-900">Natural Language Processing</h3>
-                  <p className="text-sm text-amber-800">Text processing and language models</p>
+                  <h3 className="text-lg font-bold mb-2 text-amber-900">TODO - Topic Title</h3>
+                  <p className="text-sm text-amber-800">TODO - Topic Description</p>
                 </div>
               </div>
             </div>
@@ -114,14 +118,14 @@ export default function Page() {
             {/* Bottom Section - Topic Description (1/3 height) */}
             <div className="h-1/2 flex flex-col bg-amber-100">
               <div className="p-4">
-                <h4 className="text-2xl font-bold mb-3 text-amber-900">Machine Learning Basics</h4>
-                <p className="text-base text-amber-800 mb-4">A comprehensive introduction to machine learning concepts, algorithms, and applications.</p>
+                <h4 className="text-2xl font-bold mb-3 text-amber-900">TODO - Current Topic Title</h4>
+                <p className="text-base text-amber-800 mb-4">TODO - Current Topic Description</p>
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-amber-900">Key Facts:</p>
                   <ul className="text-sm list-disc list-inside space-y-1 text-amber-800">
-                    <li>Supervised vs Unsupervised Learning</li>
-                    <li>Common ML Algorithms</li>
-                    <li>Model Evaluation Metrics</li>
+                    <li>TODO - Key Fact 1</li>
+                    <li>TODO - Key Fact 2</li>
+                    <li>TODO - Key Fact 3</li>
                   </ul>
                 </div>
               </div>
@@ -195,22 +199,22 @@ export default function Page() {
                     <div className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
                       <div className="w-2 h-2 rounded-full bg-amber-400"></div>
                       <div>
-                        <p className="text-sm font-medium text-amber-900">Linear Regression</p>
-                        <p className="text-xs text-amber-700">Basic ML algorithm</p>
+                        <p className="text-sm font-medium text-amber-900">TODO - Suggested Topic 1</p>
+                        <p className="text-xs text-amber-700">TODO - Topic Description</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
                       <div className="w-2 h-2 rounded-full bg-amber-400"></div>
                       <div>
-                        <p className="text-sm font-medium text-amber-900">Decision Trees</p>
-                        <p className="text-xs text-amber-700">Classification methods</p>
+                        <p className="text-sm font-medium text-amber-900">TODO - Suggested Topic 2</p>
+                        <p className="text-xs text-amber-700">TODO - Topic Description</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
                       <div className="w-2 h-2 rounded-full bg-amber-400"></div>
                       <div>
-                        <p className="text-sm font-medium text-amber-900">Support Vector Machines</p>
-                        <p className="text-xs text-amber-700">Advanced classification</p>
+                        <p className="text-sm font-medium text-amber-900">TODO - Suggested Topic 3</p>
+                        <p className="text-xs text-amber-700">TODO - Topic Description</p>
                       </div>
                     </div>
                   </div>
@@ -364,45 +368,104 @@ function StudyProgressCarousel() {
   const [studySessions, setStudySessions] = useState<StudySession[]>([]);
   const [hoveredSession, setHoveredSession] = useState<StudySession | null>(null);
 
-  // Fetch data from endpoints
+  // Fetch data from API endpoints
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real app, these would be actual API endpoints
-        const goalsResponse = await fetch('/api/study-goals');
-        const goalsData = await goalsResponse.json();
-        setStudyGoals(goalsData);
+        const [goalsRes, improvementRes, metricsRes, sessionsRes] = await Promise.all([
+          fetch('/api/study-goals'),
+          fetch('/api/improvement-areas'),
+          fetch('/api/study-metrics'),
+          fetch('/api/study-sessions')
+        ]);
 
-        const areasResponse = await fetch('/api/improvement-areas');
-        const areasData = await areasResponse.json();
-        setImprovementAreas(areasData);
+        if (!goalsRes.ok || !improvementRes.ok || !metricsRes.ok || !sessionsRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
 
-        const metricsResponse = await fetch('/api/study-metrics');
-        const metricsData = await metricsResponse.json();
-        setStudyMetrics(metricsData);
+        const [goals, improvement, metrics, sessions] = await Promise.all([
+          goalsRes.json(),
+          improvementRes.json(),
+          metricsRes.json(),
+          sessionsRes.json()
+        ]);
 
-        const sessionsResponse = await fetch('/api/study-sessions');
-        const sessionsData = await sessionsResponse.json();
-        setStudySessions(sessionsData);
+        setStudyGoals(goals);
+        setImprovementAreas(improvement);
+        setStudyMetrics(metrics);
+        setStudySessions(sessions);
       } catch (error) {
         console.error('Error fetching data:', error);
         // Set mock data for development
         setStudyGoals([
-          { id: '1', title: 'Complete ML Basics', targetDate: '2024-04-01', progress: 100 },
-          { id: '2', title: 'Master Neural Networks', targetDate: '2024-05-01', progress: 30 },
+          {
+            id: 1,
+            lesson_id: 2,
+            lesson_title: "Learn about sine",
+            goal_description: "Understand amplitude",
+            test_done: true,
+            status: "complete"
+          },
+          {
+            id: 2,
+            lesson_id: 2,
+            lesson_title: "Learn about sine",
+            goal_description: "Understand phase",
+            test_done: false,
+            status: "pending"
+          }
         ]);
         setImprovementAreas([
-          { id: '1', topic: 'Linear Algebra', currentLevel: 3, targetLevel: 5, description: 'Need more practice with matrix operations' },
-          { id: '2', topic: 'Statistics', currentLevel: 4, targetLevel: 5, description: 'Focus on probability distributions' },
+          {
+            lesson_id: 3,
+            lesson_title: "Understand cosine",
+            topic_name: "Trigonometry",
+            progress: 0.45,
+            missing_goals: 2
+          },
+          {
+            lesson_id: 5,
+            lesson_title: "Matrix multiplication",
+            topic_name: "Linear Algebra",
+            progress: 0.30,
+            missing_goals: 1
+          }
         ]);
         setStudyMetrics([
-          { id: '1', name: 'Study Hours', value: 45, unit: 'hours', trend: 'up' },
-          { id: '2', name: 'Practice Problems', value: 120, unit: 'problems', trend: 'up' },
+          {
+            topic_id: 1,
+            topic_name: "Trigonometry",
+            study_hours: 5.5,
+            session_count: 7,
+            day_streak: 3,
+            overall_progress: 0.78
+          },
+          {
+            topic_id: 2,
+            topic_name: "Linear Algebra",
+            study_hours: 3.2,
+            session_count: 4,
+            day_streak: 1,
+            overall_progress: 0.45
+          }
         ]);
         setStudySessions([
-          { id: '1', date: '2024-03-01', mastery: 0.8, duration: 60, topic: 'ML Basics' },
-          { id: '2', date: '2024-03-02', mastery: 0.6, duration: 45, topic: 'Neural Networks' },
-          { id: '3', date: '2024-03-03', mastery: 0.9, duration: 90, topic: 'ML Basics' },
+          {
+            id: 101,
+            topic_id: 1,
+            lesson_id: 2,
+            session_datetime: "2025-05-24T20:00:00",
+            length_minutes: 45,
+            mastery_score: 0.85
+          },
+          {
+            id: 102,
+            topic_id: 1,
+            lesson_id: 3,
+            session_datetime: "2025-05-23T18:30:00",
+            length_minutes: 30,
+            mastery_score: 0.75
+          }
         ]);
       }
     };
@@ -419,12 +482,21 @@ function StudyProgressCarousel() {
             <div key={goal.id} className="p-3 bg-amber-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full border-2 ${goal.progress === 100 ? 'bg-green-500 border-green-600' : 'border-amber-400'
-                    }`} />
-                  <h4 className="font-medium text-amber-900">{goal.title}</h4>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${goal.status === "complete" ? 'bg-green-500 border-green-600' : 'border-amber-400'
+                    }`}>
+                    {goal.status === "complete" && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-amber-900">{goal.goal_description}</h4>
+                    <p className="text-sm text-amber-700">{goal.lesson_title}</p>
+                  </div>
                 </div>
                 <span className="text-sm text-amber-700">
-                  {goal.progress === 100 ? 'Done' : 'Todo'}
+                  {goal.status === "complete" ? 'Done' : 'Todo'}
                 </span>
               </div>
             </div>
@@ -435,14 +507,28 @@ function StudyProgressCarousel() {
     {
       title: "Areas for Improvement",
       content: (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {improvementAreas.map((area) => (
-            <div key={area.id} className="p-3 bg-amber-50 rounded-lg">
+            <div key={area.lesson_id} className="p-3 bg-amber-50 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <h4 className="font-medium text-amber-900">{area.topic}</h4>
-                <span className="text-sm text-amber-700">Level {area.currentLevel}/{area.targetLevel}</span>
+                <h4 className="font-medium text-amber-900">{area.lesson_title}</h4>
+                <span className="text-sm text-amber-700">{area.topic_name}</span>
               </div>
-              <p className="text-sm text-amber-800">{area.description}</p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-amber-700">
+                  <span>Progress</span>
+                  <span>{Math.round(area.progress * 100)}%</span>
+                </div>
+                <div className="h-2 bg-amber-100 rounded-full">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
+                    style={{ width: `${area.progress * 100}%` }}
+                  />
+                </div>
+                <p className="text-sm text-amber-700">
+                  {area.missing_goals} goal{area.missing_goals !== 1 ? 's' : ''} remaining
+                </p>
+              </div>
             </div>
           ))}
         </div>
@@ -451,17 +537,27 @@ function StudyProgressCarousel() {
     {
       title: "Study Metrics",
       content: (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {studyMetrics.map((metric) => (
-            <div key={metric.id} className="p-3 bg-amber-50 rounded-lg">
-              <div className="flex justify-between items-center">
-                <h4 className="font-medium text-amber-900">{metric.name}</h4>
-                <span className="text-sm text-amber-700">
-                  {metric.value} {metric.unit}
-                  <span className={`ml-2 ${metric.trend === 'up' ? 'text-green-500' : metric.trend === 'down' ? 'text-red-500' : 'text-amber-500'}`}>
-                    {metric.trend === 'up' ? '↑' : metric.trend === 'down' ? '↓' : '→'}
-                  </span>
-                </span>
+            <div key={metric.topic_id} className="p-3 bg-amber-50 rounded-lg">
+              <h4 className="font-medium text-amber-900 mb-2">{metric.topic_name}</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="text-amber-700">
+                  <span className="block font-medium">Study Hours</span>
+                  <span>{metric.study_hours}h</span>
+                </div>
+                <div className="text-amber-700">
+                  <span className="block font-medium">Sessions</span>
+                  <span>{metric.session_count}</span>
+                </div>
+                <div className="text-amber-700">
+                  <span className="block font-medium">Day Streak</span>
+                  <span>{metric.day_streak} days</span>
+                </div>
+                <div className="text-amber-700">
+                  <span className="block font-medium">Progress</span>
+                  <span>{Math.round(metric.overall_progress * 100)}%</span>
+                </div>
               </div>
             </div>
           ))}
@@ -500,9 +596,9 @@ function StudyProgressCarousel() {
                       {studySessions.map((session, index) => {
                         if (index === studySessions.length - 1) return null;
                         const x1 = (index / (studySessions.length - 1)) * 100;
-                        const y1 = (1 - session.mastery) * 100;
+                        const y1 = (1 - session.mastery_score) * 100;
                         const x2 = ((index + 1) / (studySessions.length - 1)) * 100;
-                        const y2 = (1 - studySessions[index + 1].mastery) * 100;
+                        const y2 = (1 - studySessions[index + 1].mastery_score) * 100;
 
                         return (
                           <line
@@ -522,9 +618,9 @@ function StudyProgressCarousel() {
                     {/* Data points */}
                     {studySessions.map((session, index) => {
                       const x = (index / (studySessions.length - 1)) * 100;
-                      const y = (1 - session.mastery) * 100;
-                      const color = session.mastery >= 0.7 ? 'bg-green-500' :
-                        session.mastery >= 0.4 ? 'bg-amber-500' :
+                      const y = (1 - session.mastery_score) * 100;
+                      const color = session.mastery_score >= 0.7 ? 'bg-green-500' :
+                        session.mastery_score >= 0.4 ? 'bg-amber-500' :
                           'bg-red-500';
 
                       return (
@@ -556,13 +652,13 @@ function StudyProgressCarousel() {
               className="absolute bg-white p-2 rounded-lg shadow-lg text-sm transform -translate-x-1/2 -translate-y-full -mt-2"
               style={{
                 left: `${(studySessions.findIndex(s => s.id === hoveredSession.id) / (studySessions.length - 1)) * 100}%`,
-                top: `${(1 - hoveredSession.mastery) * 100}%`
+                top: `${(1 - hoveredSession.mastery_score) * 100}%`
               }}
             >
-              <p className="font-medium text-amber-900">{hoveredSession.topic}</p>
-              <p className="text-amber-700">Mastery: {Math.round(hoveredSession.mastery * 100)}%</p>
-              <p className="text-amber-700">Duration: {hoveredSession.duration} min</p>
-              <p className="text-amber-700">{new Date(hoveredSession.date).toLocaleDateString()}</p>
+              <p className="font-medium text-amber-900">Session {hoveredSession.id}</p>
+              <p className="text-amber-700">Mastery: {Math.round(hoveredSession.mastery_score * 100)}%</p>
+              <p className="text-amber-700">Duration: {hoveredSession.length_minutes} min</p>
+              <p className="text-amber-700">{new Date(hoveredSession.session_datetime).toLocaleDateString()}</p>
             </div>
           )}
         </div>
@@ -573,7 +669,7 @@ function StudyProgressCarousel() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 50000);
 
     return () => clearInterval(timer);
   }, []);

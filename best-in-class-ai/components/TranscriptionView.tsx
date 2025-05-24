@@ -21,8 +21,8 @@ export default function TranscriptionView() {
             id={segment.id}
             key={segment.id}
             className={`p-2 rounded-lg ${segment.role === "assistant"
-                ? "bg-amber-100 text-amber-900 self-start"
-                : "bg-amber-600 text-white self-end"
+              ? "bg-amber-100 text-amber-900 self-start"
+              : "bg-amber-600 text-white self-end"
               }`}
           >
             {segment.text}
