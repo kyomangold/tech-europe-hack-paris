@@ -1,11 +1,13 @@
 # agent.py
 
 from dotenv import load_dotenv
+import os
 
 from livekit import agents
-from livekit.agents import AgentSession, Agent, RoomInputOptions, function_tool, get_job_context
+from livekit.agents import AgentSession, Agent, RoomInputOptions, RoomOutputOptions, function_tool, get_job_context
 from livekit.plugins import (
     openai,
+    bey,
     noise_cancellation,
     silero,
 )
@@ -55,6 +57,8 @@ class Assistant(Agent):
 
 
 async def entrypoint(ctx: agents.JobContext):
+
+    await ctx.connect()
     session = AgentSession(
         stt=openai.STT(model="gpt-4o-transcribe"),
         llm=openai.LLM(model="gpt-4o-mini"),
@@ -82,6 +86,10 @@ async def entrypoint(ctx: agents.JobContext):
                 print(f" - audio: {content.frame}, transcript: {content.transcript}")
                 conversation_logger.info(f"Audio content - transcript: {content.transcript}")
 
+    avatar_id = os.getenv("BEY_AVATAR_ID")
+    bey_avatar = bey.AvatarSession(avatar_id=avatar_id)
+    await bey_avatar.start(session, room=ctx.room)
+
     await session.start(
         room=ctx.room,
         agent=Assistant(),
@@ -91,9 +99,10 @@ async def entrypoint(ctx: agents.JobContext):
             # - For telephony applications, use `BVCTelephony` for best results
             noise_cancellation=noise_cancellation.BVC(), 
         ),
+        room_output_options=RoomOutputOptions(audio_enabled=False),
     )
 
-    await ctx.connect()
+    
 
     # await session.generate_reply(
     #     instructions="Greet the user and offer your assistance."
