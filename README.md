@@ -1,6 +1,9 @@
-# Best-In-Class AI Tutor
+# Best-In-Class – AI Tutor
 
 An AI Tutor that helps user students learn a subject using the Feynman technique. The project consists of a Next.js frontend and a Python backend with LiveKit integration for real-time communication.
+
+![Best-In-Class AI Tutor Screenshot](./best_in_class_ai_feynman.png)
+
 
 ## Project Structure
 
