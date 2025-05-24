@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Room, RoomEvent } from "livekit-client";
 import { useCallback, useEffect, useState } from "react";
 import type { ConnectionDetails } from "./api/connection-details/route";
+import { NewTopicDialog } from "./components/NewTopicDialog";
 
 // Add these types before the StudyProgressCarousel component
 type StudyGoal = {
@@ -84,6 +85,7 @@ export default function Page() {
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(null);
   const [nextUpTopics, setNextUpTopics] = useState<NextUpTopic[]>([]);
+  const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false);
 
   const fetchCurrentTopic = async (topicId?: number) => {
     try {
@@ -270,7 +272,10 @@ export default function Page() {
             <div className="h-1/2 p-4 border-b border-amber-200 overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-amber-900">Topics</h2>
-                <button className="px-3 py-1 bg-amber-600 text-white rounded-md hover:bg-amber-700">
+                <button
+                  onClick={() => setIsNewTopicDialogOpen(true)}
+                  className="px-3 py-1 bg-amber-600 text-white rounded-md hover:bg-amber-700"
+                >
                   New Topic
                 </button>
               </div>
@@ -405,6 +410,12 @@ export default function Page() {
             </div>
           </div>
         </div>
+
+        <NewTopicDialog
+          isOpen={isNewTopicDialogOpen}
+          onClose={() => setIsNewTopicDialogOpen(false)}
+          onSubmit={() => { }}
+        />
       </RoomContext.Provider>
     </main>
   );

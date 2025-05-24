@@ -39,15 +39,104 @@ async def api_upload_study_material(file: UploadFile = File(...)):
     return {"file_id": str(file_handle.id)}
 
 @app.post("/api/new-topic")
-async def api_new_topic(
-    file_id: str = Form(...),
-    user_input: str = Form(...)
+async def create_new_topic(
+    name: str = Form(...),
+    description: str = Form(...),
+    file: UploadFile = File(None)
 ):
-    # Extract document text (implement according to your storage)
-    # For now, pseudo-code:
-    document_text = "..."  # TODO: retrieve from file_id, see OpenAI API docs for file retrieval
-    result = await call_generate_topic_summary(document_text, user_input)
-    return {"result": result}
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # 1. Upload file if provided
+        file_id = None
+        if file:
+            file_path = f"/tmp/{file.filename}"
+            with open(file_path, "wb") as f:
+                content = await file.read()
+                f.write(content)
+            file_handle = await upload_study_material(file_path)
+            file_id = str(file_handle.id)
+
+        # 2. Generate topic summary using AI
+        document_text = "..."  # TODO: retrieve from file_id if available
+        topic_summary = await call_generate_topic_summary(document_text, description)
+
+        # 3. Generate study plan
+        study_plan = await call_generate_study_plan(description)
+
+        # 4. Insert new topic into database
+        cursor.execute("""
+            INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
+            VALUES (?, ?, 0, 0, 0, 0)
+        """, (name, description))
+        topic_id = cursor.lastrowid
+
+        # 5. Create lessons from study plan
+        # This is a simplified version - you might want to parse the study plan more carefully
+        lessons = study_plan.split('\n')
+        for lesson in lessons:
+            if lesson.strip():
+                cursor.execute("""
+                    INSERT INTO lessons (topic_id, title, progress)
+                    VALUES (?, ?, 0)
+                """, (topic_id, lesson.strip()))
+
+        # 6. If file was uploaded, record it
+        if file_id:
+            cursor.execute("""
+                INSERT INTO uploaded_files (topic_id, file_path)
+                VALUES (?, ?)
+            """, (topic_id, file_path))
+
+        conn.commit()
+
+        return {
+            "id": topic_id,
+            "name": name,
+            "description": description,
+            "summary": topic_summary,
+            "study_plan": study_plan
+        }
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+@app.post("/api/create-topic")
+async def create_topic(
+    name: str = Form(...),
+    description: str = Form(None),
+    file: UploadFile = File(None)
+):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # Insert new topic into database
+        cursor.execute("""
+            INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
+            VALUES (?, ?, 0, 0, 0, 0)
+        """, (name, description))
+        topic_id = cursor.lastrowid
+
+        # If file was uploaded, save it and record it
+        if file:
+            file_path = f"/tmp/{file.filename}"
+            with open(file_path, "wb") as f:
+                content = await file.read()
+                f.write(content)
+            cursor.execute("""
+                INSERT INTO uploaded_files (topic_id, file_path)
+                VALUES (?, ?)
+            """, (topic_id, file_path))
+
+        conn.commit()
+        return {"id": topic_id, "name": name, "description": description}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
 
 """
 @app.post("/api/study-planner")
