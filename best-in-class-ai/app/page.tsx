@@ -62,9 +62,86 @@ type Topic = {
   overall_progress: number;
 };
 
+type TopicProgress = {
+  topic_id: number;
+  topic_name: string;
+  total_lessons: number;
+  completed_lessons: number;
+};
+
+type NextUpTopic = {
+  id: number;
+  name: string;
+  description: string;
+  progress: number;
+  total_lessons: number;
+  completed_lessons: number;
+};
+
 export default function Page() {
   const [room] = useState(new Room());
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
+  const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(null);
+  const [nextUpTopics, setNextUpTopics] = useState<NextUpTopic[]>([]);
+
+  const fetchCurrentTopic = async (topicId?: number) => {
+    try {
+      const url = new URL('http://localhost:8000/api/current-topic');
+      if (topicId !== undefined) {
+        url.searchParams.append('topic_id', topicId.toString());
+      }
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error('Failed to fetch current topic');
+      }
+      const data = await response.json();
+      setCurrentTopic(data);
+    } catch (error) {
+      console.error('Error fetching current topic:', error);
+      // Mock data for development
+      setCurrentTopic({
+        id: 1,
+        name: "TODO Trigonometry",
+        description: "Study of sine, cosine, tangent, etc.",
+        study_hours: 5.5,
+        session_count: 7,
+        day_streak: 3,
+        overall_progress: 0.78
+      });
+    }
+  };
+
+  const fetchTopicProgress = async (topicId?: number) => {
+    try {
+      const url = new URL('http://localhost:8000/api/topic-progress');
+      if (topicId !== undefined) {
+        url.searchParams.append('topic_id', topicId.toString());
+      }
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error('Failed to fetch topic progress');
+      }
+      const data = await response.json();
+      setTopicProgress(data);
+    } catch (error) {
+      console.error('Error fetching topic progress:', error);
+      // Mock data for development
+      setTopicProgress({
+        topic_id: 1,
+        topic_name: "Trigonometry",
+        total_lessons: 5,
+        completed_lessons: 1
+      });
+    }
+  };
+
+  const handleTopicClick = async (topicId: number) => {
+    await Promise.all([
+      fetchCurrentTopic(topicId),
+      fetchTopicProgress(topicId)
+    ]);
+  };
 
   // Fetch topics data
   useEffect(() => {
@@ -111,7 +188,42 @@ export default function Page() {
       }
     };
 
+    const fetchNextUpTopics = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/next-up-topics');
+        if (!response.ok) {
+          throw new Error('Failed to fetch next up topics');
+        }
+        const data = await response.json();
+        setNextUpTopics(data);
+      } catch (error) {
+        console.error('Error fetching next up topics:', error);
+        // Mock data for development
+        setNextUpTopics([
+          {
+            id: 2,
+            name: "Linear Algebra",
+            description: "Vectors, matrices, and operations",
+            progress: 0.45,
+            total_lessons: 4,
+            completed_lessons: 1
+          },
+          {
+            id: 3,
+            name: "Calculus",
+            description: "Derivatives and integrals",
+            progress: 0.0,
+            total_lessons: 6,
+            completed_lessons: 0
+          }
+        ]);
+      }
+    };
+
     fetchTopics();
+    fetchCurrentTopic();
+    fetchTopicProgress();
+    fetchNextUpTopics();
   }, []);
 
   const onConnectButtonClicked = useCallback(async () => {
@@ -160,7 +272,12 @@ export default function Page() {
 
               <div className="flex flex-col gap-4">
                 {topics.map((topic) => (
-                  <div key={topic.id} className="p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors">
+                  <div
+                    key={topic.id}
+                    className={`p-4 bg-white rounded-lg hover:bg-amber-100 cursor-pointer transition-colors ${currentTopic?.id === topic.id ? 'ring-2 ring-amber-500' : ''
+                      }`}
+                    onClick={() => handleTopicClick(topic.id)}
+                  >
                     <h3 className="text-lg font-bold mb-2 text-amber-900">{topic.name}</h3>
                     <p className="text-sm text-amber-700">
                       {topic.session_count} sessions • {topic.study_hours.toFixed(1)} hours • {Math.round(topic.overall_progress * 100)}% complete
@@ -173,14 +290,18 @@ export default function Page() {
             {/* Bottom Section - Topic Description (1/3 height) */}
             <div className="h-1/2 flex flex-col bg-amber-100">
               <div className="p-4">
-                <h4 className="text-2xl font-bold mb-3 text-amber-900">TODO - Current Topic Title</h4>
-                <p className="text-base text-amber-800 mb-4">TODO - Current Topic Description</p>
+                <h4 className="text-2xl font-bold mb-3 text-amber-900">
+                  {currentTopic?.name || "No topic selected"}
+                </h4>
+                <p className="text-base text-amber-800 mb-4">
+                  {currentTopic?.description || "Select a topic to view its description"}
+                </p>
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-amber-900">Key Facts:</p>
                   <ul className="text-sm list-disc list-inside space-y-1 text-amber-800">
-                    <li>TODO - Key Fact 1</li>
-                    <li>TODO - Key Fact 2</li>
-                    <li>TODO - Key Fact 3</li>
+                    <li>{currentTopic ? `${currentTopic.study_hours.toFixed(1)} hours studied` : "No study data"}</li>
+                    <li>{currentTopic ? `${currentTopic.session_count} sessions completed` : "No sessions"}</li>
+                    <li>{currentTopic ? `${currentTopic.day_streak} day streak` : "No streak"}</li>
                   </ul>
                 </div>
               </div>
@@ -235,13 +356,19 @@ export default function Page() {
                 <div className="mt-4 p-4 bg-white rounded-lg shadow-sm">
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="text-sm font-medium text-amber-900">Topic Progress</h4>
-                    <span className="text-sm text-amber-700">1/5</span>
+                    <span className="text-sm text-amber-700">
+                      {topicProgress ? `${topicProgress.completed_lessons}/${topicProgress.total_lessons}` : "0/0"}
+                    </span>
                   </div>
                   <div className="h-2 bg-amber-100 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-gradient-to-r from-amber-400 to-amber-600"
                       initial={{ width: 0 }}
-                      animate={{ width: "20%" }}
+                      animate={{
+                        width: topicProgress
+                          ? `${(topicProgress.completed_lessons / topicProgress.total_lessons) * 100}%`
+                          : "0%"
+                      }}
                       transition={{ duration: 1, ease: "easeOut" }}
                     />
                   </div>
@@ -251,27 +378,17 @@ export default function Page() {
                 <div className="p-4 bg-white rounded-lg shadow-sm">
                   <h4 className="text-sm font-medium text-amber-900 mb-3">Next Up</h4>
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
-                      <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                      <div>
-                        <p className="text-sm font-medium text-amber-900">TODO - Suggested Topic 1</p>
-                        <p className="text-xs text-amber-700">TODO - Topic Description</p>
+                    {nextUpTopics.map((topic) => (
+                      <div key={topic.id} className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
+                        <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                        <div>
+                          <p className="text-sm font-medium text-amber-900">{topic.name}</p>
+                          <p className="text-xs text-amber-700">
+                            {topic.completed_lessons}/{topic.total_lessons} lessons • {Math.round(topic.progress * 100)}% complete
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
-                      <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                      <div>
-                        <p className="text-sm font-medium text-amber-900">TODO - Suggested Topic 2</p>
-                        <p className="text-xs text-amber-700">TODO - Topic Description</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
-                      <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                      <div>
-                        <p className="text-sm font-medium text-amber-900">TODO - Suggested Topic 3</p>
-                        <p className="text-xs text-amber-700">TODO - Topic Description</p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>

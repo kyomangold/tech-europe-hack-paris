@@ -142,6 +142,154 @@ def read_topics():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Endpoint: /api/current-topic
+@app.get("/api/current-topic")
+def get_current_topic(topic_id: int = None):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # If topic_id is provided, get that specific topic, otherwise get the most recent one
+        if topic_id is not None:
+            cursor.execute("""
+                SELECT 
+                    id,
+                    name,
+                    description,
+                    study_hours,
+                    session_count,
+                    day_streak,
+                    overall_progress
+                FROM topics
+                WHERE id = ?
+            """, (topic_id,))
+        else:
+            cursor.execute("""
+                SELECT 
+                    id,
+                    name,
+                    description,
+                    study_hours,
+                    session_count,
+                    day_streak,
+                    overall_progress
+                FROM topics
+                ORDER BY overall_progress DESC, study_hours DESC
+                LIMIT 1
+            """)
+        
+        row = cursor.fetchone()
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="No topics found")
+            
+        return {
+            "id": row[0],
+            "name": row[1],
+            "description": row[2],
+            "study_hours": row[3],
+            "session_count": row[4],
+            "day_streak": row[5],
+            "overall_progress": row[6]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+# Endpoint: /api/topic-progress
+@app.get("/api/topic-progress")
+def get_topic_progress(topic_id: int = None):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # If topic_id is provided, get progress for that topic, otherwise get the most recent one
+        if topic_id is not None:
+            cursor.execute("""
+                SELECT 
+                    t.id,
+                    t.name,
+                    COUNT(l.id) as total_lessons,
+                    COUNT(CASE WHEN l.progress >= 1 THEN 1 END) as completed_lessons
+                FROM topics t
+                LEFT JOIN lessons l ON t.id = l.topic_id
+                WHERE t.id = ?
+                GROUP BY t.id, t.name
+            """, (topic_id,))
+        else:
+            cursor.execute("""
+                SELECT 
+                    t.id,
+                    t.name,
+                    COUNT(l.id) as total_lessons,
+                    COUNT(CASE WHEN l.progress >= 1 THEN 1 END) as completed_lessons
+                FROM topics t
+                LEFT JOIN lessons l ON t.id = l.topic_id
+                WHERE t.id = (
+                    SELECT id FROM topics 
+                    ORDER BY overall_progress DESC, study_hours DESC 
+                    LIMIT 1
+                )
+                GROUP BY t.id, t.name
+            """)
+        
+        row = cursor.fetchone()
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="No topics found")
+            
+        return {
+            "topic_id": row[0],
+            "topic_name": row[1],
+            "total_lessons": row[2],
+            "completed_lessons": row[3]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+# Endpoint: /api/next-up-topics
+@app.get("/api/next-up-topics")
+def get_next_up_topics():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # Get topics with incomplete lessons, ordered by progress
+        cursor.execute("""
+            SELECT 
+                t.id,
+                t.name,
+                t.description,
+                t.overall_progress,
+                COUNT(l.id) as total_lessons,
+                COUNT(CASE WHEN l.progress >= 1 THEN 1 END) as completed_lessons
+            FROM topics t
+            LEFT JOIN lessons l ON t.id = l.topic_id
+            WHERE t.id != (
+                SELECT id FROM topics 
+                ORDER BY overall_progress DESC, study_hours DESC 
+                LIMIT 1
+            )
+            GROUP BY t.id, t.name, t.description, t.overall_progress
+            HAVING total_lessons > completed_lessons
+            ORDER BY t.overall_progress DESC
+            LIMIT 3
+        """)
+        rows = cursor.fetchall()
+        
+        return [{
+            "id": row[0],
+            "name": row[1],
+            "description": row[2],
+            "progress": row[3],
+            "total_lessons": row[4],
+            "completed_lessons": row[5]
+        } for row in rows]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
 # Skeleton Endpoints
 @app.get("/api/connection-details")
 def get_connection_details():
