@@ -62,21 +62,11 @@ type TopicProgress = {
   completed_lessons: number;
 };
 
-type NextUpTopic = {
-  id: number;
-  name: string;
-  description: string;
-  progress: number;
-  total_lessons: number;
-  completed_lessons: number;
-};
-
 export default function Page() {
   const [room] = useState(new Room());
   const [topics, setTopics] = useState<Topic[]>([]);
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(null);
-  const [nextUpTopics, setNextUpTopics] = useState<NextUpTopic[]>([]);
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false);
 
   const fetchCurrentTopic = async (topicId?: number) => {
@@ -191,42 +181,9 @@ export default function Page() {
       }
     };
 
-    const fetchNextUpTopics = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/next-up-topics');
-        if (!response.ok) {
-          throw new Error('Failed to fetch next up topics');
-        }
-        const data = await response.json();
-        setNextUpTopics(data);
-      } catch (error) {
-        console.error('Error fetching next up topics:', error);
-        // Mock data for development
-        setNextUpTopics([
-          {
-            id: 2,
-            name: "Linear Algebra",
-            description: "Vectors, matrices, and operations",
-            progress: 0.45,
-            total_lessons: 4,
-            completed_lessons: 1
-          },
-          {
-            id: 3,
-            name: "Calculus",
-            description: "Derivatives and integrals",
-            progress: 0.0,
-            total_lessons: 6,
-            completed_lessons: 0
-          }
-        ]);
-      }
-    };
-
     fetchTopics();
     fetchCurrentTopic();
     fetchTopicProgress();
-    fetchNextUpTopics();
   }, []);
 
   const onConnectButtonClicked = useCallback(async () => {
@@ -402,20 +359,7 @@ export default function Page() {
 
                 {/* Suggested Topics */}
                 <div className="p-4 bg-white rounded-lg shadow-sm">
-                  <h4 className="text-sm font-medium text-amber-900 mb-3">Next Up</h4>
-                  <div className="space-y-3">
-                    {nextUpTopics.map((topic) => (
-                      <div key={topic.id} className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
-                        <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                        <div>
-                          <p className="text-sm font-medium text-amber-900">{topic.name}</p>
-                          <p className="text-xs text-amber-700">
-                            {topic.completed_lessons}/{topic.total_lessons} lessons • {Math.round(topic.progress * 100)}% complete
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <StudySessionHeatmap />
                 </div>
               </div>
 
@@ -863,3 +807,85 @@ function StudyProgressCarousel() {
     </div>
   );
 }
+
+// --- StudySessionHeatmap ---
+function getPastDates(weeks: number) {
+  const days = weeks * 7;
+  const dates: string[] = [];
+  const today = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    dates.push(d.toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+function getHeatColor(count: number) {
+  // Adjust thresholds as needed for your color palette
+  if (count >= 5) return "#166534"; // darkest
+  if (count >= 3) return "#22c55e";
+  if (count >= 2) return "#4ade80";
+  if (count === 1) return "#bbf7d0";
+  return "#f3f4f6"; // lightest
+}
+
+function StudySessionHeatmap() {
+  const [sessions, setSessions] = useState<StudySession[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/study-sessions")
+      .then((res) => res.json())
+      .then(setSessions)
+      .catch(() => setSessions([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Aggregate sessions by date
+  const sessionCountByDate: Record<string, number> = {};
+  sessions.forEach((s) => {
+    const date = s.session_datetime.slice(0, 10);
+    sessionCountByDate[date] = (sessionCountByDate[date] || 0) + 1;
+  });
+
+  // Build grid for past 26 weeks (6 months)
+  const weeks = 26;
+  const days = getPastDates(weeks);
+
+  // Group days by week (for columns)
+  const grid: string[][] = [];
+  for (let i = 0; i < days.length; i += 7) {
+    grid.push(days.slice(i, i + 7));
+  }
+
+  if (loading) return <div>Loading heatmap...</div>;
+
+  return (
+    <div>
+      <h4 className="text-sm font-medium text-amber-900 mb-3">Study Activity</h4>
+      <div style={{ display: "flex", gap: 2 }}>
+        {grid.map((week, i) => (
+          <div key={i} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {week.map((date, j) => (
+              <div
+                key={date}
+                title={`${date}: ${sessionCountByDate[date] || 0} session(s)`}
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 2,
+                  background: getHeatColor(sessionCountByDate[date] || 0),
+                  border: "1px solid #e5e7eb",
+                  marginBottom: j < 6 ? 2 : 0,
+                }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="text-xs text-amber-700 mt-2">Last {weeks} weeks</div>
+    </div>
+  );
+}
+// --- End StudySessionHeatmap ---
