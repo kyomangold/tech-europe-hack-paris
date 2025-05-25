@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 # Connect to SQLite (or create new db)
@@ -81,70 +81,104 @@ cursor.execute("""
     INSERT INTO topics (name, description, key_points, progress, overall_progress) 
     VALUES (?, ?, ?, ?, ?)
 """, (
-    "Trigonometry",
-    "Study of sine, cosine, tangent, etc.",
+    "10x Study Methods",
+    "Advanced learning techniques and study strategies",
     json.dumps([
-        "Understanding of basic trigonometric functions",
-        "Application of sine and cosine laws",
-        "Solving trigonometric equations"
+        "Spaced Repetition",
+        "Pomodoro Technique",
+        "Feynman Technique",
+        "Cornell Note Taking System"
     ]),
-    5.5,
-    0.78
+    0.5,  # 50% progress
+    0.5
 ))
 
 cursor.execute("""
     INSERT INTO topics (name, description, key_points, progress, overall_progress) 
     VALUES (?, ?, ?, ?, ?)
 """, (
-    "Linear Algebra",
-    "Vectors, matrices, and operations",
+    "Quantum Mechanics",
+    "Fundamental principles of quantum physics",
     json.dumps([
-        "Matrix operations and properties",
-        "Vector spaces and subspaces",
-        "Eigenvalues and eigenvectors"
+        "Wave-Particle Duality",
+        "Schrödinger Equation",
+        "Quantum Superposition",
+        "Quantum Tunneling",
+        "Quantum Spin"
     ]),
-    3.2,
-    0.45
+    0.8,  # 80% progress
+    0.8
 ))
 
 # Fetch topic ids
-cursor.execute("SELECT id FROM topics WHERE name = 'Trigonometry'")
-topic1_id = cursor.fetchone()[0]
-cursor.execute("SELECT id FROM topics WHERE name = 'Linear Algebra'")
-topic2_id = cursor.fetchone()[0]
+cursor.execute("SELECT id FROM topics WHERE name = '10x Study Methods'")
+study_methods_id = cursor.fetchone()[0]
+cursor.execute("SELECT id FROM topics WHERE name = 'Quantum Mechanics'")
+quantum_id = cursor.fetchone()[0]
 
-# Lessons for Trigonometry
-cursor.execute("INSERT INTO lessons (topic_id, title, progress) VALUES (?, ?, ?)", 
-               (topic1_id, "Learn about sine", 0.9))
-cursor.execute("INSERT INTO lessons (topic_id, title, progress) VALUES (?, ?, ?)", 
-               (topic1_id, "Understand cosine", 0.65))
-cursor.execute("INSERT INTO lessons (topic_id, title, progress) VALUES (?, ?, ?)", 
-               (topic2_id, "Matrix Multiplication", 0.5))
+# Lessons for Study Methods
+study_methods_lessons = [
+    (study_methods_id, "Spaced Repetition", 1.0, "completed"),
+    (study_methods_id, "Pomodoro Technique", 1.0, "completed"),
+    (study_methods_id, "Feynman Technique", 0.0, "open"),
+    (study_methods_id, "Cornell Note Taking System", 0.0, "open")
+]
 
-# Fetch lesson ids
-cursor.execute("SELECT id FROM lessons WHERE title = 'Learn about sine'")
-lesson1_id = cursor.fetchone()[0]
-cursor.execute("SELECT id FROM lessons WHERE title = 'Understand cosine'")
-lesson2_id = cursor.fetchone()[0]
-cursor.execute("SELECT id FROM lessons WHERE title = 'Matrix Multiplication'")
-lesson3_id = cursor.fetchone()[0]
+for lesson in study_methods_lessons:
+    cursor.execute("""
+        INSERT INTO lessons (topic_id, title, progress, status) 
+        VALUES (?, ?, ?, ?)
+    """, lesson)
 
-# Goals for lesson 1
-cursor.executemany("INSERT INTO goals (lesson_id, description, test_done, status) VALUES (?, ?, ?, ?)", [
-    (lesson1_id, "Understand amplitude", 1, "complete"),
-    (lesson1_id, "Understand phase", 1, "complete"),
-    (lesson1_id, "Explain sine graph", 0, "pending")
-])
+# Lessons for Quantum Mechanics
+quantum_lessons = [
+    (quantum_id, "Wave-Particle Duality", 1.0, "completed"),
+    (quantum_id, "The Schrödinger Equation", 1.0, "completed"),
+    (quantum_id, "Quantum Superposition and Measurement", 1.0, "completed"),
+    (quantum_id, "Quantum Tunneling", 1.0, "completed"),
+    (quantum_id, "Quantum Spin and Pauli Exclusion Principle", 0.0, "open")
+]
 
-# Sessions
-cursor.executemany("INSERT INTO sessions (topic_id, lesson_id, session_datetime, length_minutes, mastery_score) VALUES (?, ?, ?, ?, ?)", [
-    (topic1_id, lesson1_id, datetime.now().isoformat(), 45, 0.85),
-    (topic1_id, lesson2_id, datetime.now().isoformat(), 30, 0.75),
-    (topic2_id, lesson3_id, datetime.now().isoformat(), 50, 0.6)
-])
+for lesson in quantum_lessons:
+    cursor.execute("""
+        INSERT INTO lessons (topic_id, title, progress, status) 
+        VALUES (?, ?, ?, ?)
+    """, lesson)
+
+# Fetch lesson ids for sessions
+cursor.execute("SELECT id FROM lessons WHERE title = 'Spaced Repetition'")
+spaced_rep_id = cursor.fetchone()[0]
+cursor.execute("SELECT id FROM lessons WHERE title = 'Pomodoro Technique'")
+pomodoro_id = cursor.fetchone()[0]
+cursor.execute("SELECT id FROM lessons WHERE title = 'Wave-Particle Duality'")
+wave_particle_id = cursor.fetchone()[0]
+cursor.execute("SELECT id FROM lessons WHERE title = 'The Schrödinger Equation'")
+schrodinger_id = cursor.fetchone()[0]
+
+# Generate study sessions with realistic timestamps
+now = datetime.now()
+sessions = [
+    # Study Methods sessions
+    (study_methods_id, spaced_rep_id, (now - timedelta(days=14)).isoformat(), 45, 0.9),
+    (study_methods_id, spaced_rep_id, (now - timedelta(days=10)).isoformat(), 30, 0.95),
+    (study_methods_id, pomodoro_id, (now - timedelta(days=7)).isoformat(), 60, 0.85),
+    (study_methods_id, pomodoro_id, (now - timedelta(days=5)).isoformat(), 45, 0.9),
+    
+    # Quantum Mechanics sessions
+    (quantum_id, wave_particle_id, (now - timedelta(days=21)).isoformat(), 90, 0.8),
+    (quantum_id, wave_particle_id, (now - timedelta(days=18)).isoformat(), 60, 0.85),
+    (quantum_id, schrodinger_id, (now - timedelta(days=15)).isoformat(), 120, 0.75),
+    (quantum_id, schrodinger_id, (now - timedelta(days=12)).isoformat(), 90, 0.85),
+    (quantum_id, schrodinger_id, (now - timedelta(days=9)).isoformat(), 60, 0.9)
+]
+
+cursor.executemany("""
+    INSERT INTO sessions (topic_id, lesson_id, session_datetime, length_minutes, mastery_score) 
+    VALUES (?, ?, ?, ?, ?)
+""", sessions)
 
 # Commit and close
 conn.commit()
 conn.close()
 
-print("SQLite DB initialized with 2 topics, multiple lessons, goals, and sessions.")
+print("SQLite DB initialized with Study Methods and Quantum Mechanics topics, including lessons and study sessions.")
