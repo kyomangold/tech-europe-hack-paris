@@ -198,7 +198,7 @@ export default function Page() {
     fetchTopicProgress();
   }, []);
 
-  const onConnectButtonClicked = useCallback(async () => {
+  const onConnectButtonClicked = useCallback(async (teacherMode = false) => {
     // Set current session/topic in backend before connecting
     if (currentTopic) {
       await fetch('http://localhost:8000/api/current-session', {
@@ -207,7 +207,8 @@ export default function Page() {
         body: JSON.stringify({
           topic_id: currentTopic.id,
           session_id: null,
-          metadata: currentTopic
+          metadata: currentTopic,
+          mode: teacherMode ? 'teacher' : 'assistant'
         })
       });
     }
@@ -224,6 +225,7 @@ export default function Page() {
       process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? "/api/connection-details",
       window.location.origin
     );
+    // No need to set room_prefix or mode in the URL anymore
     const response = await fetch(url.toString());
     const connectionDetailsData: ConnectionDetails = await response.json();
 
@@ -351,12 +353,15 @@ export default function Page() {
               <div className="col-span-1 flex flex-col gap-4">
                 <button
                   className="p-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center justify-center shadow-sm"
-                  onClick={onConnectButtonClicked}
+                  onClick={() => onConnectButtonClicked(false)}
                 >
                   <span className="font-medium">Start Next Study Session</span>
                 </button>
-                <button className="p-4 bg-amber-500 text-white rounded-lg hover:bg-amber-600 flex items-center justify-center shadow-sm">
-                  <span className="font-medium">Give More Information</span>
+                <button
+                  className="p-4 bg-amber-500 text-white rounded-lg hover:bg-amber-600 flex items-center justify-center shadow-sm"
+                  onClick={() => onConnectButtonClicked(true)}
+                >
+                  <span className="font-medium">Teacher Mode</span>
                 </button>
 
                 {/* Progress Section */}
@@ -405,7 +410,7 @@ export default function Page() {
   );
 }
 
-function SimpleVoiceAssistant(props: { onConnectButtonClicked: () => void }) {
+function SimpleVoiceAssistant(props: { onConnectButtonClicked: (teacherMode?: boolean) => void }) {
   const { state: agentState } = useVoiceAssistant();
 
   return (
@@ -486,7 +491,7 @@ function AgentVisualizer() {
   );
 }
 
-function ControlBar(props: { onConnectButtonClicked: () => void }) {
+function ControlBar(props: { onConnectButtonClicked: (teacherMode?: boolean) => void }) {
   const { state: agentState } = useVoiceAssistant();
 
   return (

@@ -62,6 +62,49 @@ class Assistant(Agent):
         job_ctx = get_job_context()
         await job_ctx.api.room.delete_room(job_ctx.room.name)
 
+class Teacher(Agent):
+    def __init__(self) -> None:
+        super().__init__(instructions="You are an engaging and knowledgeable teacher who provides detailed explanations and answers questions about academic topics.")
+        self.current_topic = None
+        self.mini_lecture_script = None
+    async def on_enter(self) -> None:
+        # Use topic_context if available
+        topic = getattr(self.session, 'topic_context', None)
+        if topic and topic.get('metadata') and 'name' in topic['metadata']:
+            self.current_topic = topic['metadata']['name']
+        if not self.current_topic:
+            await self.session.say("I need a topic to provide information about. Please select a topic first.")
+            return
+        await self.session.say(f"I'm gathering some additional information about {self.current_topic}. Please wait a moment...")
+        # Use web search to get more information
+        search_result = await self.session.generate_reply(
+            instructions=f"Search the web for detailed information about {self.current_topic}. Focus on key concepts, examples, and real-world applications."
+        )
+        # Generate a mini lecture script
+        self.mini_lecture_script = await self.session.generate_reply(
+            instructions=f"Based on the search results about {self.current_topic}, create a detailed 2-3 minute mini lecture. Include:\n"
+            "1. A clear introduction to the topic\n"
+            "2. Key concepts and their explanations\n"
+            "3. Real-world examples or applications\n"
+            "4. A brief summary\n"
+            "Make it engaging and easy to understand."
+        )
+        await self.session.say(self.mini_lecture_script)
+        await self.session.say("Do you have any questions about what I've explained? Feel free to ask anything!")
+    @function_tool()
+    async def set_topic(self, topic: str) -> None:
+        self.current_topic = topic
+    @function_tool()
+    async def answer_question(self, question: str) -> str:
+        await self.session.generate_reply(
+            instructions=f"Answer the following question about {self.current_topic} in a clear and detailed way: {question}"
+        )
+    @function_tool()
+    async def end_teaching_session(self) -> None:
+        await self.session.generate_reply(instructions="Thank the student for their questions and indicate that the teaching session is ending.")
+        await self.session.say("Thank you for your questions! Feel free to ask for more information anytime.")
+        job_ctx = get_job_context()
+        await job_ctx.api.room.delete_room(job_ctx.room.name)
 
 async def entrypoint(ctx: agents.JobContext):
 
@@ -69,7 +112,7 @@ async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
         stt=openai.STT(model="gpt-4o-transcribe"),
         llm=openai.LLM(model="gpt-4o-mini"),
-        tts=openai.TTS(model="gpt-4o-mini-tts"),
+        tts=openai.TTS(model="gpt-4o-mini-tts", voice="nova"),
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
     )
@@ -79,15 +122,16 @@ async def entrypoint(ctx: agents.JobContext):
         conn = sqlite3.connect("best_in_class.db")
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT topic_id, session_id, metadata FROM current_session WHERE id = 1")
+            cursor.execute("SELECT topic_id, session_id, metadata, mode FROM current_session WHERE id = 1")
             row = cursor.fetchone()
             if not row:
                 return None
-            topic_id, session_id, metadata = row
+            topic_id, session_id, metadata, mode = row
             return {
                 "topic_id": topic_id,
                 "session_id": session_id,
-                "metadata": json.loads(metadata) if metadata else None
+                "metadata": json.loads(metadata) if metadata else None,
+                "mode": mode
             }
         finally:
             conn.close()
@@ -119,9 +163,19 @@ async def entrypoint(ctx: agents.JobContext):
     bey_avatar = bey.AvatarSession(avatar_id=avatar_id)
     await bey_avatar.start(session, room=ctx.room)
 
+    # Determine which agent to use based on the mode in the DB
+    mode = topic_context.get('mode') if topic_context else None
+    logger.info(f"Mode from DB: {topic_context}")
+    if mode == 'teacher':
+        logger.info("Using Teacher agent")
+        agent = Teacher()
+    else:
+        logger.info("Using Assistant agent")
+        agent = Assistant()
+
     await session.start(
         room=ctx.room,
-        agent=Assistant(),
+        agent=agent,
         room_input_options=RoomInputOptions(
             # LiveKit Cloud enhanced noise cancellation
             # - If self-hosting, omit this parameter

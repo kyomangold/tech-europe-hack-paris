@@ -297,7 +297,8 @@ def init_db():
             id INTEGER PRIMARY KEY CHECK (id = 1),
             topic_id INTEGER,
             session_id INTEGER,
-            metadata TEXT
+            metadata TEXT,
+            mode TEXT
         )
     """)
     
@@ -732,13 +733,14 @@ async def set_current_session(request: Request):
     topic_id = data.get("topic_id")
     session_id = data.get("session_id")
     metadata = data.get("metadata")
+    mode = data.get("mode")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT OR REPLACE INTO current_session (id, topic_id, session_id, metadata)
-            VALUES (1, ?, ?, ?)
-        """, (topic_id, session_id, json.dumps(metadata) if metadata else None))
+            INSERT OR REPLACE INTO current_session (id, topic_id, session_id, metadata, mode)
+            VALUES (1, ?, ?, ?, ?)
+        """, (topic_id, session_id, json.dumps(metadata) if metadata else None, mode))
         conn.commit()
         return {"status": "ok"}
     finally:
@@ -750,15 +752,16 @@ def get_current_session():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT topic_id, session_id, metadata FROM current_session WHERE id = 1")
+        cursor.execute("SELECT topic_id, session_id, metadata, mode FROM current_session WHERE id = 1")
         row = cursor.fetchone()
         if not row:
-            return {"topic_id": None, "session_id": None, "metadata": None}
-        topic_id, session_id, metadata = row
+            return {"topic_id": None, "session_id": None, "metadata": None, "mode": None}
+        topic_id, session_id, metadata, mode = row
         return {
             "topic_id": topic_id,
             "session_id": session_id,
-            "metadata": json.loads(metadata) if metadata else None
+            "metadata": json.loads(metadata) if metadata else None,
+            "mode": mode
         }
     finally:
         conn.close()

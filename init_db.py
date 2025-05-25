@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS goals;
 DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS lessons;
 DROP TABLE IF EXISTS topics;
+DROP TABLE IF EXISTS current_session;
 """)
 
 # Create tables based on the updated schema
@@ -63,6 +64,14 @@ CREATE TABLE uploaded_files (
     file_handle TEXT,
     uploaded_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE
+);
+
+CREATE TABLE current_session (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    topic_id INTEGER,
+    session_id INTEGER,
+    metadata TEXT,
+    mode TEXT
 );
 """)
 
