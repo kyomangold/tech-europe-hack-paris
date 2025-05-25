@@ -90,7 +90,7 @@ cursor.execute("""
         "Cornell Note Taking System"
     ]),
     0.5,  # 50% progress
-    0.5
+    1.0
 ))
 
 cursor.execute("""
@@ -107,7 +107,7 @@ cursor.execute("""
         "Quantum Spin"
     ]),
     0.8,  # 80% progress
-    0.8
+    4.5
 ))
 
 # Fetch topic ids
@@ -118,31 +118,31 @@ quantum_id = cursor.fetchone()[0]
 
 # Lessons for Study Methods
 study_methods_lessons = [
-    (study_methods_id, "Spaced Repetition", 1.0, "completed"),
-    (study_methods_id, "Pomodoro Technique", 1.0, "completed"),
-    (study_methods_id, "Feynman Technique", 0.0, "open"),
-    (study_methods_id, "Cornell Note Taking System", 0.0, "open")
+    (study_methods_id, "Spaced Repetition", 1.0),  # completed
+    (study_methods_id, "Pomodoro Technique", 1.0),  # completed
+    (study_methods_id, "Feynman Technique", 0.0),  # open
+    (study_methods_id, "Cornell Note Taking System", 0.0)  # open
 ]
 
 for lesson in study_methods_lessons:
     cursor.execute("""
-        INSERT INTO lessons (topic_id, title, progress, status) 
-        VALUES (?, ?, ?, ?)
+        INSERT INTO lessons (topic_id, title, progress) 
+        VALUES (?, ?, ?)
     """, lesson)
 
 # Lessons for Quantum Mechanics
 quantum_lessons = [
-    (quantum_id, "Wave-Particle Duality", 1.0, "completed"),
-    (quantum_id, "The Schrödinger Equation", 1.0, "completed"),
-    (quantum_id, "Quantum Superposition and Measurement", 1.0, "completed"),
-    (quantum_id, "Quantum Tunneling", 1.0, "completed"),
-    (quantum_id, "Quantum Spin and Pauli Exclusion Principle", 0.0, "open")
+    (quantum_id, "Wave-Particle Duality", 1.0),  # completed
+    (quantum_id, "The Schrödinger Equation", 1.0),  # completed
+    (quantum_id, "Quantum Superposition and Measurement", 1.0),  # completed
+    (quantum_id, "Quantum Tunneling", 1.0),  # completed
+    (quantum_id, "Quantum Spin and Pauli Exclusion Principle", 0.0)  # open
 ]
 
 for lesson in quantum_lessons:
     cursor.execute("""
-        INSERT INTO lessons (topic_id, title, progress, status) 
-        VALUES (?, ?, ?, ?)
+        INSERT INTO lessons (topic_id, title, progress) 
+        VALUES (?, ?, ?)
     """, lesson)
 
 # Fetch lesson ids for sessions
