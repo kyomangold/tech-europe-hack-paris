@@ -1,26 +1,29 @@
 # Architecture Documentation
 
 ## Component/Module Design
+The system comprises four main modules as represented in the Mermaid diagram:
 
-The architecture consists of four main components/modules as illustrated in the provided Mermaid diagram:
+1. **agents_openai**: This module likely serves as an interface for interacting with OpenAI APIs or models, enabling functionalities related to AI-driven predictions or responses.
 
-1. **agents_openai**: This module likely serves as the interface or integration point for OpenAI's services, handling requests and responses related to the OpenAI API. It likely includes functionalities for sending prompts and receiving generated text or outputs.
+2. **fastapi_backend**: This module is likely the backend framework that handles HTTP requests and responses. FastAPI is designed for building APIs quickly and efficiently, indicating this module might manage user interactions and relay information between the frontend and other services.
 
-2. **fastapi_backend**: This module appears to implement the backend functionality using the FastAPI framework, which is known for building APIs quickly and effectively. It might include route definitions, request handling, and response formatting, leveraging asynchronous capabilities for better performance.
+3. **agent**: This module likely represents the central logic or algorithms that define the behavior of an agent within the system. It may encapsulate methods for processing input and generating output using either predefined rules or AI models.
 
-3. **agent**: This module likely represents the core logic or functionality of the application, possibly encapsulating the behavior of an AI agent. It may include methods for processing data, interacting with users, and implementing decision-making processes.
-
-4. **init_db**: This module likely handles database initialization and setup. It may include logic for creating tables, seeding initial data, or configuring database connections to ensure that the application has a properly set up database environment.
+4. **init_db**: This module appears to deal with the database initialization process. Its primary role likely involves setting up connections, schemas, or migrations required for the database the application uses. 
 
 ## Module Relationships and Interaction
+The relationships and interactions among the modules can be inferred, but there are no explicit connections shown in the diagram itself. Therefore, we can summarize the following relationships based on typical design patterns:
 
-The relationships and interactions between these modules are not explicitly depicted in the diagram. However, we can infer the following based on typical architectural patterns:
+- **fastapi_backend** would most likely interact with **agents_openai** to make or receive requests related to AI functionalities, sending and receiving data as needed.
+  
+- The **agent** module is probably dependent on both **agents_openai** and **fastapi_backend**. It would need to call the functionality provided by **agents_openai** to perform detailed processing or decisions based on AI responses, while also interacting with **fastapi_backend** to relay information back to the user.
 
-- The **fastapi_backend** module probably interacts with the **agents_openai** and **agent** modules to process incoming API requests and utilize OpenAI's functionality or the agent's behavior. 
-- The **agent** module may depend on services from **agents_openai** to access external AI functionalities and respond based on processed data.
-- The **init_db** module is likely called during the startup process of the application to prepare the database, making it a foundational component that sets up the environment for the other modules.
+- **init_db** is likely utilized during application startup to prepare the database environment. It is expected to be invoked by the **fastapi_backend** module during the initialization phase, ensuring that the database is ready to handle incoming requests.
 
-## Generated Mermaid Diagram
+However, specific directional relationships, such as whether modules inherit from each other or the nature of their interactions, cannot be deduced from the diagram alone.
+
+## Mermaid Diagram
+Here is the generated Mermaid class diagram representing the system:
 
 ```mermaid
 classDiagram
@@ -30,4 +33,4 @@ classDiagram
     class init_db
 ```
 
-This diagram visualizes the main modules in the application architecture. The relationships and interactions can be interpreted, but specific dependencies or calling patterns are not detailed in the diagram itself. Further insights into the interactions would require a look at the code implementations within these modules.
+In conclusion, while the provided diagram outlines the key components of the system, the precise interactions and relationships still require additional context to fully understand the dynamic between these modules.
