@@ -127,6 +127,18 @@ export default function Page() {
       fetchTopicProgress(topicId)
     ]);
 
+    // Set current session/topic in backend
+    const topic = topics.find(t => t.id === topicId);
+    await fetch('http://localhost:8000/api/current-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic_id: topicId,
+        session_id: null,
+        metadata: topic || null
+      })
+    });
+
     // Dispatch custom event for topic change
     window.dispatchEvent(new CustomEvent('topicChange', {
       detail: { topicId }
@@ -187,6 +199,18 @@ export default function Page() {
   }, []);
 
   const onConnectButtonClicked = useCallback(async () => {
+    // Set current session/topic in backend before connecting
+    if (currentTopic) {
+      await fetch('http://localhost:8000/api/current-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic_id: currentTopic.id,
+          session_id: null,
+          metadata: currentTopic
+        })
+      });
+    }
     // Generate room connection details, including:
     //   - A random Room name
     //   - A random Participant name
@@ -205,7 +229,7 @@ export default function Page() {
 
     await room.connect(connectionDetailsData.serverUrl, connectionDetailsData.participantToken);
     await room.localParticipant.setMicrophoneEnabled(true);
-  }, [room]);
+  }, [room, currentTopic]);
 
   useEffect(() => {
     room.on(RoomEvent.MediaDevicesError, onDeviceFailure);

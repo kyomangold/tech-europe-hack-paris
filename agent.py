@@ -2,6 +2,8 @@
 
 from dotenv import load_dotenv
 import os
+import sqlite3
+import json
 
 from livekit import agents
 from livekit.agents import AgentSession, Agent, RoomInputOptions, RoomOutputOptions, function_tool, get_job_context
@@ -33,7 +35,12 @@ class Assistant(Agent):
         super().__init__(instructions="You are a helpful voice AI tutor that uses the Feynman technique to help the student learn by letting them explain the topic in their own words to you.")
         
     async def on_enter(self) -> None:
-        await self.session.say("What topic would you like to discuss?")
+        # Use topic_context if available
+        topic = getattr(self.session, 'topic_context', None)
+        if topic and topic.get('metadata') and 'name' in topic['metadata']:
+            await self.session.say(f"Welcome to your next learning session on {topic['metadata']['name']}.")
+        else:
+            await self.session.say("What topic would you like to discuss?")
         
     @function_tool()
     async def give_task_for_topic(self) -> str:
@@ -66,6 +73,28 @@ async def entrypoint(ctx: agents.JobContext):
         vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
     )
+
+    # --- Fetch topic context from SQLite current_session table ---
+    def get_current_session():
+        conn = sqlite3.connect("best_in_class.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT topic_id, session_id, metadata FROM current_session WHERE id = 1")
+            row = cursor.fetchone()
+            if not row:
+                return None
+            topic_id, session_id, metadata = row
+            return {
+                "topic_id": topic_id,
+                "session_id": session_id,
+                "metadata": json.loads(metadata) if metadata else None
+            }
+        finally:
+            conn.close()
+
+    topic_context = get_current_session()
+    print("[Agent] Topic context from DB:", topic_context)
+    session.topic_context = topic_context
     
     @session.on("conversation_item_added")
     def on_conversation_item_added(event: ConversationItemAddedEvent):

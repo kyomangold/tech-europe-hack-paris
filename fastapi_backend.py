@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import sqlite3
@@ -288,6 +288,16 @@ def init_db():
             title TEXT NOT NULL,
             progress FLOAT DEFAULT 0,
             FOREIGN KEY (topic_id) REFERENCES topics (id)
+        )
+    """)
+    
+    # Create current_session table (singleton row for now)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS current_session (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            topic_id INTEGER,
+            session_id INTEGER,
+            metadata TEXT
         )
     """)
     
@@ -714,3 +724,41 @@ def get_improvement_areas():
 @app.get("/api/study-metrics")
 def get_study_metrics():
     return {"message": "Study metrics placeholder"}
+
+# Endpoint to set the current session/topic/metadata
+@app.post("/api/current-session")
+async def set_current_session(request: Request):
+    data = await request.json()
+    topic_id = data.get("topic_id")
+    session_id = data.get("session_id")
+    metadata = data.get("metadata")
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT OR REPLACE INTO current_session (id, topic_id, session_id, metadata)
+            VALUES (1, ?, ?, ?)
+        """, (topic_id, session_id, json.dumps(metadata) if metadata else None))
+        conn.commit()
+        return {"status": "ok"}
+    finally:
+        conn.close()
+
+# Endpoint to get the current session/topic/metadata
+@app.get("/api/current-session")
+def get_current_session():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT topic_id, session_id, metadata FROM current_session WHERE id = 1")
+        row = cursor.fetchone()
+        if not row:
+            return {"topic_id": None, "session_id": None, "metadata": None}
+        topic_id, session_id, metadata = row
+        return {
+            "topic_id": topic_id,
+            "session_id": session_id,
+            "metadata": json.loads(metadata) if metadata else None
+        }
+    finally:
+        conn.close()
