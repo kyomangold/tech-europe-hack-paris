@@ -356,7 +356,7 @@ def get_all_topics() -> List[Topic]:
             id=row[0],
             name=row[1],
             description=row[2],
-            key_points=row[3],
+            key_points=json.loads(row[3]) if row[3] else None,
             progress=row[4],
             session_count=row[5],
             day_streak=row[6],

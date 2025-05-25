@@ -18,15 +18,6 @@ import type { ConnectionDetails } from "./api/connection-details/route";
 import { NewTopicDialog } from "./components/NewTopicDialog";
 
 // Add these types before the StudyProgressCarousel component
-type StudyGoal = {
-  id: number;
-  lesson_id: number;
-  lesson_title: string;
-  goal_description: string;
-  test_done: boolean;
-  status: 'complete' | 'pending';
-};
-
 type ImprovementArea = {
   lesson_id: number;
   lesson_title: string;
@@ -575,7 +566,6 @@ function onDeviceFailure(error: Error) {
 
 function StudyProgressCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [studyGoals, setStudyGoals] = useState<StudyGoal[]>([]);
   const [improvementAreas, setImprovementAreas] = useState<ImprovementArea[]>([]);
   const [studyMetrics, setStudyMetrics] = useState<StudyMetric | null>(null);
   const [studySessions, setStudySessions] = useState<StudySession[]>([]);
@@ -587,49 +577,28 @@ function StudyProgressCarousel() {
       const baseUrl = 'http://localhost:8000';
       const params = topicId ? `?topic_id=${topicId}` : '';
 
-      const [goalsRes, improvementRes, metricsRes, sessionsRes] = await Promise.all([
-        fetch(`${baseUrl}/api/study-goals${params}`),
+      const [improvementRes, metricsRes, sessionsRes] = await Promise.all([
         fetch(`${baseUrl}/api/improvement-areas${params}`),
         fetch(`${baseUrl}/api/study-metrics${params}`),
         fetch(`${baseUrl}/api/study-sessions${params}`)
       ]);
 
-      if (!goalsRes.ok || !improvementRes.ok || !metricsRes.ok || !sessionsRes.ok) {
+      if (!improvementRes.ok || !metricsRes.ok || !sessionsRes.ok) {
         throw new Error('Failed to fetch data');
       }
 
-      const [goals, improvement, metrics, sessions] = await Promise.all([
-        goalsRes.json(),
+      const [improvement, metrics, sessions] = await Promise.all([
         improvementRes.json(),
         metricsRes.json(),
         sessionsRes.json()
       ]);
 
-      setStudyGoals(goals);
       setImprovementAreas(improvement);
       setStudyMetrics(metrics);
       setStudySessions(sessions);
     } catch (error) {
       console.error('Error fetching data:', error);
       // Set mock data for development
-      setStudyGoals([
-        {
-          id: 1,
-          lesson_id: 2,
-          lesson_title: "Learn about sine",
-          goal_description: "Understand amplitude",
-          test_done: true,
-          status: "complete"
-        },
-        {
-          id: 2,
-          lesson_id: 2,
-          lesson_title: "Learn about sine",
-          goal_description: "Understand phase",
-          test_done: false,
-          status: "pending"
-        }
-      ]);
       setImprovementAreas([
         {
           lesson_id: 3,
@@ -700,55 +669,25 @@ function StudyProgressCarousel() {
       title: "Study Goals",
       content: (
         <div className="space-y-3">
-          {studyGoals.map((goal) => (
-            <div key={goal.id} className="p-3 bg-amber-50 rounded-lg">
+          {improvementAreas.map((area) => (
+            <div key={area.lesson_id} className="p-3 bg-amber-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${goal.status === "complete" ? 'bg-green-500 border-green-600' : 'border-amber-400'}`}>
-                    {goal.status === "complete" && (
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${area.progress >= 1 ? 'bg-green-500 border-green-600' : 'border-amber-400'}`}>
+                    {area.progress >= 1 && (
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </div>
                   <div>
-                    <h4 className="font-medium text-amber-900">{goal.goal_description}</h4>
-                    <p className="text-sm text-amber-700">{goal.lesson_title}</p>
+                    <h4 className="font-medium text-amber-900">{area.lesson_title}</h4>
+                    <p className="text-sm text-amber-700">{area.topic_name}</p>
                   </div>
                 </div>
                 <span className="text-sm text-amber-700">
-                  {goal.status === "complete" ? 'Done' : 'Todo'}
+                  {area.progress >= 1 ? 'Complete' : `${Math.round(area.progress * 100)}%`}
                 </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )
-    },
-    {
-      title: "Areas for Improvement",
-      content: (
-        <div className="space-y-3">
-          {improvementAreas.map((area) => (
-            <div key={area.lesson_id} className="p-3 bg-amber-50 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-medium text-amber-900">{area.lesson_title}</h4>
-                <span className="text-sm text-amber-700">{area.topic_name}</span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-amber-700">
-                  <span>Progress</span>
-                  <span>{Math.round(area.progress * 100)}%</span>
-                </div>
-                <div className="h-2 bg-amber-100 rounded-full">
-                  <div
-                    className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
-                    style={{ width: `${area.progress * 100}%` }}
-                  />
-                </div>
-                <p className="text-sm text-amber-700">
-                  {area.missing_goals} goal{area.missing_goals !== 1 ? 's' : ''} remaining
-                </p>
               </div>
             </div>
           ))}
