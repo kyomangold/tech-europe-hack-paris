@@ -183,6 +183,16 @@ async def create_topic(
                 topic_title = lines[0].strip()
                 topic_summary = '\n'.join(lines[1:]).strip()
                 
+                # Check if topic name already exists and make it unique if needed
+                base_title = topic_title
+                counter = 1
+                while True:
+                    cursor.execute("SELECT id FROM topics WHERE name = ?", (topic_title,))
+                    if not cursor.fetchone():
+                        break
+                    topic_title = f"{base_title} ({counter})"
+                    counter += 1
+                
                 # Generate study plan
                 study_plan_response = client.responses.create(
                     model="gpt-4.1",
@@ -239,7 +249,17 @@ async def create_topic(
                 print(f"Error processing file content: {str(e)}")
                 raise HTTPException(status_code=500, detail=f"Error processing file content: {str(e)}")
         else:
-            # If no file is provided, just create the topic with the provided name and description
+            # If no file is provided, check for duplicate name and make it unique if needed
+            base_title = topic_title
+            counter = 1
+            while True:
+                cursor.execute("SELECT id FROM topics WHERE name = ?", (topic_title,))
+                if not cursor.fetchone():
+                    break
+                topic_title = f"{base_title} ({counter})"
+                counter += 1
+
+            # Create the topic with the unique name
             cursor.execute("""
                 INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
                 VALUES (?, ?, 0, 0, 0, 0)
