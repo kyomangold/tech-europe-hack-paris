@@ -69,6 +69,7 @@ CREATE TABLE uploaded_files (
 CREATE TABLE current_session (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     topic_id INTEGER,
+    lesson_id INTEGER,
     session_id INTEGER,
     metadata TEXT,
     mode TEXT

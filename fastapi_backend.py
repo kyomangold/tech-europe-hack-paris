@@ -296,6 +296,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS current_session (
             id INTEGER PRIMARY KEY CHECK (id = 1),
             topic_id INTEGER,
+            lesson_id INTEGER,
             session_id INTEGER,
             metadata TEXT,
             mode TEXT
@@ -731,6 +732,7 @@ def get_study_metrics():
 async def set_current_session(request: Request):
     data = await request.json()
     topic_id = data.get("topic_id")
+    lesson_id = data.get("lesson_id")
     session_id = data.get("session_id")
     metadata = data.get("metadata")
     mode = data.get("mode")
@@ -738,9 +740,9 @@ async def set_current_session(request: Request):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT OR REPLACE INTO current_session (id, topic_id, session_id, metadata, mode)
-            VALUES (1, ?, ?, ?, ?)
-        """, (topic_id, session_id, json.dumps(metadata) if metadata else None, mode))
+            INSERT OR REPLACE INTO current_session (id, topic_id, lesson_id, session_id, metadata, mode)
+            VALUES (1, ?, ?, ?, ?, ?)
+        """, (topic_id, lesson_id, session_id, json.dumps(metadata) if metadata else None, mode))
         conn.commit()
         return {"status": "ok"}
     finally:
@@ -752,13 +754,14 @@ def get_current_session():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT topic_id, session_id, metadata, mode FROM current_session WHERE id = 1")
+        cursor.execute("SELECT topic_id, lesson_id, session_id, metadata, mode FROM current_session WHERE id = 1")
         row = cursor.fetchone()
         if not row:
-            return {"topic_id": None, "session_id": None, "metadata": None, "mode": None}
-        topic_id, session_id, metadata, mode = row
+            return {"topic_id": None, "lesson_id": None, "session_id": None, "metadata": None, "mode": None}
+        topic_id, lesson_id, session_id, metadata, mode = row
         return {
             "topic_id": topic_id,
+            "lesson_id": lesson_id,
             "session_id": session_id,
             "metadata": json.loads(metadata) if metadata else None,
             "mode": mode

@@ -37,10 +37,24 @@ class Assistant(Agent):
     async def on_enter(self) -> None:
         # Use topic_context if available
         topic = getattr(self.session, 'topic_context', None)
+        logger.info(f"Topic context: {topic}")
         if topic and topic.get('metadata') and 'name' in topic['metadata']:
             await self.session.say(f"Welcome to your next learning session on {topic['metadata']['name']}.")
         else:
             await self.session.say("What topic would you like to discuss?")
+        # Fetch lesson goal/description
+        lesson_id = topic.get('lesson_id') if topic else None
+        if lesson_id:
+            conn = sqlite3.connect("best_in_class.db")
+            cursor = conn.cursor()
+            cursor.execute("SELECT title FROM lessons WHERE id = ?", (lesson_id,))
+            lesson_row = cursor.fetchone()
+            conn.close()
+            if lesson_row:
+                lesson_title = lesson_row[0]
+                await self.session.generate_reply(
+                    instructions=f"Ask the user to elaborate on the following lesson: {lesson_title}"
+                )
         
     @function_tool()
     async def give_task_for_topic(self) -> str:
@@ -122,13 +136,14 @@ async def entrypoint(ctx: agents.JobContext):
         conn = sqlite3.connect("best_in_class.db")
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT topic_id, session_id, metadata, mode FROM current_session WHERE id = 1")
+            cursor.execute("SELECT topic_id, lesson_id, session_id, metadata, mode FROM current_session WHERE id = 1")
             row = cursor.fetchone()
             if not row:
                 return None
-            topic_id, session_id, metadata, mode = row
+            topic_id, lesson_id, session_id, metadata, mode = row
             return {
                 "topic_id": topic_id,
+                "lesson_id": lesson_id,
                 "session_id": session_id,
                 "metadata": json.loads(metadata) if metadata else None,
                 "mode": mode
