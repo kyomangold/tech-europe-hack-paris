@@ -58,7 +58,6 @@ CREATE TABLE uploaded_files (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     topic_id INTEGER,
     file_path TEXT,
-    file_handle TEXT,
     uploaded_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE
 );

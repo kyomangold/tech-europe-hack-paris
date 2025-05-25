@@ -7,7 +7,7 @@ import datetime
 import openai
 from openai import OpenAI
 
-from agents_openai import upload_study_material, give_more_info, call_generate_topic_summary, call_generate_study_plan
+from agents_openai import upload_study_material, give_more_info, call_generate_topic_summary, call_generate_study_plan, call_generate_topic_title
 
 
 
@@ -42,12 +42,12 @@ async def api_upload_study_material(file: UploadFile = File(...)):
             content = await file.read()
             f.write(content)
         
-        # Upload to OpenAI
+        # Upload to OpenAI with purpose="user_data"
+        client = OpenAI()
         with open(file_path, "rb") as f:
-            client = OpenAI()
             uploaded_file = client.files.create(
                 file=f,
-                purpose="assistants"
+                purpose="user_data"
             )
         
         # Store in database
@@ -59,10 +59,11 @@ async def api_upload_study_material(file: UploadFile = File(...)):
                 VALUES (?, ?)
             """, (file_path, str(uploaded_file.id)))
             conn.commit()
+            file_id = cursor.lastrowid
         finally:
             conn.close()
         
-        return {"file_id": str(uploaded_file.id)}
+        return {"file_id": file_id, "file_handle": str(uploaded_file.id)}
     except Exception as e:
         print(f"Error uploading file: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail=str(e))
@@ -136,36 +137,124 @@ async def create_new_topic(
 async def create_topic(
     name: str = Form(...),
     description: str = Form(None),
-    file: UploadFile = File(None)
+    file_id: str = Form(None)
 ):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        # Insert new topic into database
-        cursor.execute("""
-            INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
-            VALUES (?, ?, 0, 0, 0, 0)
-        """, (name, description))
-        topic_id = cursor.lastrowid
+        # If file_id is provided, get the file handle from the database
+        file_handle = None
+        if file_id:
+            cursor.execute("SELECT file_handle FROM uploaded_files WHERE id = ?", (file_id,))
+            result = cursor.fetchone()
+            if result:
+                file_handle = result[0]
 
-        # If file was uploaded, save it and record it
-        if file:
-            if file.content_type != 'application/pdf':
-                raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-            file_path = f"/tmp/{file.filename}"
-            with open(file_path, "wb") as f:
-                content = await file.read()
-                f.write(content)
-            file_handle = await upload_study_material(file_path)
+        # Generate topic title and summary using AI if file is provided
+        topic_title = name
+        topic_summary = description
+        if file_handle:
+            try:
+                client = OpenAI()
+                # Use the file with GPT-4
+                response = client.responses.create(
+                    model="gpt-4.1",
+                    input=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "input_file",
+                                    "file_id": file_handle,
+                                },
+                                {
+                                    "type": "input_text",
+                                    "text": f"Generate a concise title and summary for this study material. Title should be academic and concise. Summary should be 2-3 sentences followed by 3-5 key points.",
+                                },
+                            ]
+                        }
+                    ]
+                )
+                
+                # Parse the response to get title and summary
+                ai_response = response.output_text
+                # Split the response into title and summary (assuming first line is title)
+                lines = ai_response.split('\n')
+                topic_title = lines[0].strip()
+                topic_summary = '\n'.join(lines[1:]).strip()
+                
+                # Generate study plan
+                study_plan_response = client.responses.create(
+                    model="gpt-4.1",
+                    input=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "input_file",
+                                    "file_id": file_handle,
+                                },
+                                {
+                                    "type": "input_text",
+                                    "text": "Create a study plan with 3-5 high-level lessons, each with a short description.",
+                                },
+                            ]
+                        }
+                    ]
+                )
+                study_plan = study_plan_response.output_text
+                
+                # Insert new topic into database
+                cursor.execute("""
+                    INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
+                    VALUES (?, ?, 0, 0, 0, 0)
+                """, (topic_title, topic_summary))
+                topic_id = cursor.lastrowid
+
+                # Create lessons from study plan
+                lessons = study_plan.split('\n')
+                for lesson in lessons:
+                    if lesson.strip():
+                        cursor.execute("""
+                            INSERT INTO lessons (topic_id, title, progress)
+                            VALUES (?, ?, 0)
+                        """, (topic_id, lesson.strip()))
+
+                # Update the topic_id in uploaded_files
+                cursor.execute("""
+                    UPDATE uploaded_files 
+                    SET topic_id = ? 
+                    WHERE id = ?
+                """, (topic_id, file_id))
+
+                conn.commit()
+                return {
+                    "id": topic_id,
+                    "name": topic_title,
+                    "description": topic_summary,
+                    "file_handle": file_handle,
+                    "study_plan": study_plan
+                }
+            except Exception as e:
+                print(f"Error processing file content: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Error processing file content: {str(e)}")
+        else:
+            # If no file is provided, just create the topic with the provided name and description
             cursor.execute("""
-                INSERT INTO uploaded_files (topic_id, file_path, file_handle)
-                VALUES (?, ?, ?)
-            """, (topic_id, file_path, str(file_handle.id)))
-
-        conn.commit()
-        return {"id": topic_id, "name": name, "description": description}
+                INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
+                VALUES (?, ?, 0, 0, 0, 0)
+            """, (topic_title, topic_summary))
+            topic_id = cursor.lastrowid
+            conn.commit()
+            
+            return {
+                "id": topic_id,
+                "name": topic_title,
+                "description": topic_summary
+            }
     except Exception as e:
         conn.rollback()
+        print(f"Error creating topic: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
