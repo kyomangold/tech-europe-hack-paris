@@ -1,53 +1,66 @@
-Here’s a detailed description of the actual information flows within the application, based on the provided context and flowchart.
+## Information Flows Description
 
-### Information Flows
+1. **Flow between FastAPI Backend and OpenAI Agents**
+   - **Source:** FastAPI Backend
+   - **Destination:** OpenAI Agents
+   - **Data Type:** Not specified (assumed as requests/responses)
+   - **Purpose:** To facilitate communication with AI agents for processing commands or queries.
 
-1. **Flow from `fastapi_backend` to `agents_openai`**
-   - **Source**: fastapi_backend
-   - **Destination**: agents_openai
-   - **Data Type**: Unknown (potentially requests or data for processing)
-   - **Purpose**: This flow likely enables the backend to utilize the services or functionalities provided by the OpenAI agents.
+2. **Flow for Metadata**
+   - **Source:** Agent
+   - **Destination:** External System
+   - **Data Type:** Metadata (details are not specified)
+   - **Purpose:** To share or request specific metadata with an external system.
 
-2. **Flow from `agent` to `metadata` (External)**
-   - **Source**: agent
-   - **Destination**: metadata
-   - **Data Type**: Metadata
-   - **Purpose**: The agent may transmit relevant metadata information to an external system or service.
+3. **Flow for Mode**
+   - **Source:** Agent
+   - **Destination:** External System
+   - **Data Type:** Mode (details are not specified)
+   - **Purpose:** To communicate the mode of operation or processing to an external system.
 
-3. **Flow from `agent` to `mode` (External)**
-   - **Source**: agent
-   - **Destination**: mode
-   - **Data Type**: Mode settings
-   - **Purpose**: This flow likely involves sharing mode-related information for the agent's context or operation with an external system.
+4. **Flow for Topic ID**
+   - **Source:** Agent
+   - **Destination:** External System
+   - **Data Type:** Topic ID
+   - **Purpose:** To transmit the current topic identifier used in the session.
 
-4. **Flow from `agent` to `topic_id` (External)**
-   - **Source**: agent
-   - **Destination**: topic_id
-   - **Data Type**: Topic Identifier
-   - **Purpose**: The agent transmits topic identification to potentially track or manage topics externally.
+5. **API Calls from FastAPI Backend**
+   - **Source:** FastAPI Backend
+   - **Destination:** Various External API endpoints
+     - **_api_connection_details**
+     - **_api_create_topic**
+     - **_api_current_session**
+     - **_api_current_topic**
+     - **_api_give_more_info**
+     - **_api_improvement_areas**
+     - **_api_next_up_topics**
+     - **_api_study_goals**
+     - **_api_study_metrics**
+     - **_api_study_planner**
+     - **_api_study_sessions**
+     - **_api_topic_progress**
+     - **_api_topics**
+     - **_api_upload_study_material**
+     - **http://localhost:3000**
+   - **Data Type:** Various (based on API calls)
+   - **Purpose:** To interact with various functionalities and retrieve or manipulate data through these external APIs.
 
-5. **Multiple Flows from `fastapi_backend` to External APIs**
-   - **Source**: fastapi_backend
-   - **Destination**: Several external API endpoints (e.g., `_api_connection_details`, `_api_create_topic`, `_api_current_session`, etc.)
-   - **Data Type**: Various API-specific data types (e.g., session details, topics)
-   - **Purpose**: These flows represent various interactions the backend has with external APIs to manage study sessions, topics, goals, and metrics among others. Each flow serves to gather or submit relevant information as needed by different functionalities of the application.
+6. **Additional Flows for Lesson ID**
+   - **Source:** FastAPI Backend
+   - **Destination:** External System
+   - **Data Type:** Lesson ID
+   - **Purpose:** To provide or request information related to a specific lesson.
 
-6. **Flow from `fastapi_backend` to `http___localhost_3000` (External)**
-   - **Source**: fastapi_backend
-   - **Destination**: http___localhost_3000
-   - **Data Type**: Unknown (likely HTTP requests)
-   - **Purpose**: This flow indicates that the backend interacts with a local service, potentially for serving client requests or fetching resources.
+7. **Additional Flows for Session ID**
+   - **Source:** FastAPI Backend
+   - **Destination:** External System
+   - **Data Type:** Session ID
+   - **Purpose:** To manage or reference the current user session.
 
-7. **Multiple Flows from `fastapi_backend` to Various Identifiers (External)**
-   - **Source**: fastapi_backend
-   - **Destination**: lesson_id, metadata, mode, session_id, topic_id (all external)
-   - **Data Type**: Various identifiers (lesson, session, topic)
-   - **Purpose**: The backend is likely managing or referencing various entities such as lessons, sessions, and topics in communication with external systems.
+8. **Inferred Relationships**
+   - The flows for **metadata**, **mode**, and **topic_id** from both FastAPI Backend and agent to the external system appear to be for maintaining state or context between user actions and external processing. 
 
-### Mermaid Flowchart
-
-Here is the exact Mermaid flowchart as generated from code analysis:
-
+## Mermaid Diagram
 ```mermaid
 flowchart TD
     fastapi_backend --> agents_openai
