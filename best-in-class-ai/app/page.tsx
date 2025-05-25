@@ -62,6 +62,13 @@ type TopicProgress = {
   completed_lessons: number;
 };
 
+type Lesson = {
+  id: number;
+  title: string;
+  progress: number;
+  // ...other fields
+};
+
 export default function Page() {
   const [room] = useState(new Room());
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -121,24 +128,25 @@ export default function Page() {
     }
   };
 
+  const getNextLessonId = async (topicId: number): Promise<number | null> => {
+    try {
+      const lessonsRes = await fetch(`http://localhost:8000/api/lessons?topic_id=${topicId}`);
+      if (lessonsRes.ok) {
+        const lessons: Lesson[] = await lessonsRes.json();
+        const nextLesson = lessons.find((l) => l.progress < 1);
+        return nextLesson ? nextLesson.id : null;
+      }
+    } catch { }
+    return null;
+  };
+
   const handleTopicClick = async (topicId: number) => {
     await Promise.all([
       fetchCurrentTopic(topicId),
       fetchTopicProgress(topicId)
     ]);
 
-    // Fetch lessons for the topic
-    let lessonId = null;
-    try {
-      const lessonsRes = await fetch(`http://localhost:8000/api/lessons?topic_id=${topicId}`);
-      if (lessonsRes.ok) {
-        const lessons = await lessonsRes.json();
-        const nextLesson = lessons.find((l: any) => l.progress < 1);
-        lessonId = nextLesson?.id ?? null;
-      }
-    } catch (e) {
-      lessonId = null;
-    }
+    const lessonId = await getNextLessonId(topicId);
 
     // Set current session/topic in backend
     const topic = topics.find(t => t.id === topicId);
@@ -216,16 +224,7 @@ export default function Page() {
   const onConnectButtonClicked = useCallback(async (teacherMode = false) => {
     let lessonId = null;
     if (currentTopic) {
-      try {
-        const lessonsRes = await fetch(`http://localhost:8000/api/lessons?topic_id=${currentTopic.id}`);
-        if (lessonsRes.ok) {
-          const lessons = await lessonsRes.json();
-          const nextLesson = lessons.find((l: any) => l.progress < 1);
-          lessonId = nextLesson?.id ?? null;
-        }
-      } catch (e) {
-        lessonId = null;
-      }
+      lessonId = await getNextLessonId(currentTopic.id);
       const res = await fetch('http://localhost:8000/api/current-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

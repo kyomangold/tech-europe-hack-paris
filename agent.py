@@ -42,12 +42,12 @@ class Assistant(Agent):
             await self.session.say(f"Welcome to your next learning session on {topic['metadata']['name']}.")
         else:
             await self.session.say("What topic would you like to discuss?")
-        # Fetch lesson goal/description
-        lesson_id = topic.get('lesson_id') if topic else None
-        if lesson_id:
+        # Fetch first not-completed lesson for the topic
+        topic_id = topic.get('topic_id') if topic else None
+        if topic_id:
             conn = sqlite3.connect("best_in_class.db")
             cursor = conn.cursor()
-            cursor.execute("SELECT title FROM lessons WHERE id = ?", (lesson_id,))
+            cursor.execute("SELECT title FROM lessons WHERE topic_id = ? AND progress < 1 ORDER BY id ASC LIMIT 1", (topic_id,))
             lesson_row = cursor.fetchone()
             conn.close()
             if lesson_row:
