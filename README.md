@@ -1,6 +1,6 @@
 # Best-In-Class – AI Tutor
 
-An AI-powered tutor that helps students master any subject using the Feynman technique—learn by teaching. The platform features a Next.js frontend and a Python backend with LiveKit integration for real-time, voice-based interactions. Students explain concepts in their own words; the AI provides feedback, guidance, and targeted questions to deepen understanding.
+An AI-powered tutor that helps students master any subject using the Feynman technique—learn by teaching. The platform features a Next.js frontend and a Python backend with LiveKit integration for real-time, voice-based interactions. Students explain concepts in their own words; the AI provides feedback, guidance, and targeted questions to deepen understanding. 
 
 ![Best-In-Class AI Tutor Screenshot](./best_in_class_ai_feynman.png)
 
@@ -78,3 +78,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     ```bash
     uvicorn fastapi_backend:app --reload
     ```
+# Contributors 
+
+Kyo Mangold
+Daniel Gisler
