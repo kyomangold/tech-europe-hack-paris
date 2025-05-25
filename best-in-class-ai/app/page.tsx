@@ -299,7 +299,7 @@ export default function Page() {
                   >
                     <h3 className="text-lg font-bold mb-2 text-amber-900">{topic.name}</h3>
                     <p className="text-sm text-amber-700">
-                      {topic.session_count} sessions • {topic.progress.toFixed(1)} hours • {Math.round(topic.overall_progress * 100)}% complete
+                      {topic.progress.toFixed(1)} hours • {Math.round(topic.overall_progress * 100)}% complete
                     </p>
                   </div>
                 ))}
@@ -335,14 +335,7 @@ export default function Page() {
                     </ul>
                   </div>
                 )}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-amber-900">Progress:</p>
-                  <ul className="text-sm list-disc list-inside space-y-1 text-amber-800">
-                    <li>{currentTopic ? `${currentTopic.progress.toFixed(1)} hours studied` : "No study data"}</li>
-                    <li>{currentTopic ? `${currentTopic.session_count} sessions completed` : "No sessions"}</li>
-                    <li>{currentTopic ? `${currentTopic.day_streak} day streak` : "No streak"}</li>
-                  </ul>
-                </div>
+
               </div>
 
               <div className="mt-auto p-4 border-t border-amber-200">
@@ -832,7 +825,7 @@ function StudyProgressCarousel() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 50000);
+    }, 5000);
 
     return () => clearInterval(timer);
   }, []);

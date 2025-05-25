@@ -90,7 +90,7 @@ cursor.execute("""
         "Cornell Note Taking System"
     ]),
     0.5,  # 50% progress
-    1.0
+    0.5
 ))
 
 cursor.execute("""
@@ -107,7 +107,7 @@ cursor.execute("""
         "Quantum Spin"
     ]),
     0.8,  # 80% progress
-    4.5
+    0.8 
 ))
 
 # Fetch topic ids

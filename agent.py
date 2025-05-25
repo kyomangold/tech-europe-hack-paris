@@ -174,7 +174,7 @@ async def entrypoint(ctx: agents.JobContext):
                 print(f" - audio: {content.frame}, transcript: {content.transcript}")
                 conversation_logger.info(f"Audio content - transcript: {content.transcript}")
 
-    avatar_id = os.getenv("BEY_AVATAR_ID")
+    avatar_id = "8c37d173-929f-4a71-9a5f-45840bb2422b"
     bey_avatar = bey.AvatarSession(avatar_id=avatar_id)
     await bey_avatar.start(session, room=ctx.room)
 

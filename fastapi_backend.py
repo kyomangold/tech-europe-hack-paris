@@ -118,8 +118,8 @@ async def create_topic(
                                     "}\n\n"
                                     "Rules:\n"
                                     "1. Title must be academic and concise\n"
-                                    "2. Summary must be 2-3 sentences\n"
-                                    "3. Include 3-5 key points\n"
+                                    "2. Summary must be short and concise, 3 lines max.\n"
+                                    "3. Include max. 3 key points (one-liners)\n"
                                     "4. Return ONLY the JSON, no other text\n"
                                     "5. Ensure the JSON is valid and properly formatted",
                                 },
