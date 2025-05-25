@@ -57,7 +57,8 @@ type Topic = {
   id: number;
   name: string;
   description: string | null;
-  study_hours: number;
+  key_points: string[] | null;
+  progress: number;
   session_count: number;
   day_streak: number;
   overall_progress: number;
@@ -106,7 +107,8 @@ export default function Page() {
         id: 1,
         name: "TODO Trigonometry",
         description: "Study of sine, cosine, tangent, etc.",
-        study_hours: 5.5,
+        key_points: null,
+        progress: 5.5,
         session_count: 7,
         day_streak: 3,
         overall_progress: 0.78
@@ -168,7 +170,8 @@ export default function Page() {
             id: 1,
             name: "TODO Trigonometry",
             description: null,
-            study_hours: 5.5,
+            key_points: null,
+            progress: 5.5,
             session_count: 7,
             day_streak: 3,
             overall_progress: 0.78
@@ -177,7 +180,8 @@ export default function Page() {
             id: 2,
             name: "TODO Linear Algebra",
             description: null,
-            study_hours: 3.2,
+            key_points: null,
+            progress: 3.2,
             session_count: 4,
             day_streak: 1,
             overall_progress: 0.45
@@ -186,7 +190,8 @@ export default function Page() {
             id: 3,
             name: "TODO Calculus",
             description: null,
-            study_hours: 6,
+            key_points: null,
+            progress: 6,
             session_count: 0,
             day_streak: 0,
             overall_progress: 0
@@ -290,7 +295,7 @@ export default function Page() {
                   >
                     <h3 className="text-lg font-bold mb-2 text-amber-900">{topic.name}</h3>
                     <p className="text-sm text-amber-700">
-                      {topic.session_count} sessions • {topic.study_hours.toFixed(1)} hours • {Math.round(topic.overall_progress * 100)}% complete
+                      {topic.session_count} sessions • {topic.progress.toFixed(1)} hours • {Math.round(topic.overall_progress * 100)}% complete
                     </p>
                   </div>
                 ))}
@@ -306,10 +311,30 @@ export default function Page() {
                 <p className="text-base text-amber-800 mb-4">
                   {currentTopic?.description || "Select a topic to view its description"}
                 </p>
+                {currentTopic?.key_points && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-amber-900 mb-2">Key Points:</p>
+                    <ul className="text-sm list-disc list-inside space-y-1 text-amber-800">
+                      {(() => {
+                        try {
+                          const points = typeof currentTopic.key_points === 'string'
+                            ? JSON.parse(currentTopic.key_points)
+                            : currentTopic.key_points;
+                          return points.map((point: string, index: number) => (
+                            <li key={index}>{point}</li>
+                          ));
+                        } catch (e) {
+                          console.error('Error parsing key points:', e);
+                          return null;
+                        }
+                      })()}
+                    </ul>
+                  </div>
+                )}
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-amber-900">Key Facts:</p>
+                  <p className="text-sm font-medium text-amber-900">Progress:</p>
                   <ul className="text-sm list-disc list-inside space-y-1 text-amber-800">
-                    <li>{currentTopic ? `${currentTopic.study_hours.toFixed(1)} hours studied` : "No study data"}</li>
+                    <li>{currentTopic ? `${currentTopic.progress.toFixed(1)} hours studied` : "No study data"}</li>
                     <li>{currentTopic ? `${currentTopic.session_count} sessions completed` : "No sessions"}</li>
                     <li>{currentTopic ? `${currentTopic.day_streak} day streak` : "No streak"}</li>
                   </ul>
@@ -739,7 +764,7 @@ function StudyProgressCarousel() {
               <h4 className="font-medium text-amber-900 mb-2">{studyMetrics.topic_name}</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-amber-700">
-                  <span className="block font-medium">Study Hours</span>
+                  <span className="block font-medium">Progress</span>
                   <span>{studyMetrics.study_hours}h</span>
                 </div>
                 <div className="text-amber-700">
@@ -751,7 +776,7 @@ function StudyProgressCarousel() {
                   <span>{studyMetrics.day_streak} days</span>
                 </div>
                 <div className="text-amber-700">
-                  <span className="block font-medium">Progress</span>
+                  <span className="block font-medium">Overall Progress</span>
                   <span>{Math.round(studyMetrics.overall_progress * 100)}%</span>
                 </div>
               </div>

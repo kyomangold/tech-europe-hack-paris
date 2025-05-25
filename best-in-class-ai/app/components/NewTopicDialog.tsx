@@ -5,7 +5,16 @@ type NewTopicDialogProps = {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: { name: string; description: string; file: File | null }) => void;
-    onTopicsUpdate?: (topics: { id: number; name: string; description: string | null; study_hours: number; session_count: number; day_streak: number; overall_progress: number; }[]) => void;
+    onTopicsUpdate?: (topics: {
+        id: number;
+        name: string;
+        description: string | null;
+        key_points: string[] | null;
+        progress: number;
+        session_count: number;
+        day_streak: number;
+        overall_progress: number;
+    }[]) => void;
 };
 
 export function NewTopicDialog({ isOpen, onClose, onSubmit, onTopicsUpdate }: NewTopicDialogProps) {

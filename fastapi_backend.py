@@ -89,6 +89,7 @@ async def create_topic(
         # Generate topic title and summary using AI if file is provided
         topic_title = name
         topic_summary = description
+        key_points = []
         if file_handle:
             try:
                 client = OpenAI()
@@ -105,19 +106,33 @@ async def create_topic(
                                 },
                                 {
                                     "type": "input_text",
-                                    "text": f"Generate a concise title and summary for this study material. Title should be academic and concise. Summary should be 2-3 sentences followed by 3-5 key points.",
+                                    "text": f"Generate a concise title and summary for this study material. Return ONLY a JSON object in this exact format:\n"
+                                    "{\n"
+                                    '  "title": "Academic Title Here",\n'
+                                    '  "summary": "2-3 sentence summary here",\n'
+                                    '  "key_points": [\n'
+                                    '    "Key point 1",\n'
+                                    '    "Key point 2",\n'
+                                    '    "Key point 3"\n'
+                                    '  ]\n'
+                                    "}\n\n"
+                                    "Rules:\n"
+                                    "1. Title must be academic and concise\n"
+                                    "2. Summary must be 2-3 sentences\n"
+                                    "3. Include 3-5 key points\n"
+                                    "4. Return ONLY the JSON, no other text\n"
+                                    "5. Ensure the JSON is valid and properly formatted",
                                 },
                             ]
                         }
                     ]
                 )
                 
-                # Parse the response to get title and summary
-                ai_response = response.output_text
-                # Split the response into title and summary (assuming first line is title)
-                lines = ai_response.split('\n')
-                topic_title = lines[0].strip()
-                topic_summary = '\n'.join(lines[1:]).strip()
+                # Parse the JSON response to get title, summary and key points
+                ai_response = json.loads(response.output_text)
+                topic_title = ai_response["title"]
+                topic_summary = ai_response["summary"]
+                key_points = ai_response["key_points"]
                 
                 # Check if topic name already exists and make it unique if needed
                 base_title = topic_title
@@ -129,7 +144,14 @@ async def create_topic(
                     topic_title = f"{base_title} ({counter})"
                     counter += 1
                 
-                # Generate study plan
+                # Insert new topic into database with key_points
+                cursor.execute("""
+                    INSERT INTO topics (name, description, key_points, progress, session_count, day_streak, overall_progress)
+                    VALUES (?, ?, ?, 0, 0, 0, 0)
+                """, (topic_title, topic_summary, json.dumps(key_points)))
+                topic_id = cursor.lastrowid
+
+                # Generate and parse study plan
                 study_plan_response = client.responses.create(
                     model="gpt-4.1",
                     input=[
@@ -166,13 +188,6 @@ async def create_topic(
                 )
                 study_plan = study_plan_response.output_text
                 
-                # Insert new topic into database
-                cursor.execute("""
-                    INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
-                    VALUES (?, ?, 0, 0, 0, 0)
-                """, (topic_title, topic_summary))
-                topic_id = cursor.lastrowid
-
                 # Parse JSON study plan and create lessons
                 try:
                     study_plan_json = json.loads(study_plan)
@@ -197,6 +212,7 @@ async def create_topic(
                     "id": topic_id,
                     "name": topic_title,
                     "description": topic_summary,
+                    "key_points": key_points,
                     "file_handle": file_handle,
                     "study_plan": study_plan
                 }
@@ -216,16 +232,17 @@ async def create_topic(
 
             # Create the topic with the unique name
             cursor.execute("""
-                INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
-                VALUES (?, ?, 0, 0, 0, 0)
-            """, (topic_title, topic_summary))
+                INSERT INTO topics (name, description, key_points, progress, session_count, day_streak, overall_progress)
+                VALUES (?, ?, ?, 0, 0, 0, 0)
+            """, (topic_title, topic_summary, json.dumps(key_points)))
             topic_id = cursor.lastrowid
             conn.commit()
             
             return {
                 "id": topic_id,
                 "name": topic_title,
-                "description": topic_summary
+                "description": topic_summary,
+                "key_points": key_points
             }
     except Exception as e:
         conn.rollback()
@@ -244,6 +261,42 @@ async def api_study_planner(topic_description: str = Form(...)):
 # Database path
 DB_PATH = "best_in_class.db"
 
+# Initialize database with schema
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Create topics table with key_points
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS topics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            description TEXT,
+            key_points TEXT,  -- Store as JSON string
+            progress FLOAT DEFAULT 0,
+            session_count INTEGER DEFAULT 0,
+            day_streak INTEGER DEFAULT 0,
+            overall_progress FLOAT DEFAULT 0
+        )
+    """)
+    
+    # Create lessons table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lessons (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            topic_id INTEGER,
+            title TEXT NOT NULL,
+            progress FLOAT DEFAULT 0,
+            FOREIGN KEY (topic_id) REFERENCES topics (id)
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
+
+# Call init_db when the application starts
+init_db()
+
 # Pydantic models
 class StudySession(BaseModel):
     id: int
@@ -257,7 +310,8 @@ class Topic(BaseModel):
     id: int
     name: str
     description: str | None
-    study_hours: float
+    key_points: List[str] | None
+    progress: float
     session_count: int
     day_streak: int
     overall_progress: float
@@ -290,7 +344,8 @@ def get_all_topics() -> List[Topic]:
                 id,
                 name,
                 description,
-                study_hours,
+                key_points,
+                progress,
                 session_count,
                 day_streak,
                 overall_progress
@@ -301,10 +356,11 @@ def get_all_topics() -> List[Topic]:
             id=row[0],
             name=row[1],
             description=row[2],
-            study_hours=row[3],
-            session_count=row[4],
-            day_streak=row[5],
-            overall_progress=row[6]
+            key_points=row[3],
+            progress=row[4],
+            session_count=row[5],
+            day_streak=row[6],
+            overall_progress=row[7]
         ) for row in rows]
     finally:
         conn.close()
@@ -340,7 +396,8 @@ def get_current_topic(topic_id: int = None):
                     id,
                     name,
                     description,
-                    study_hours,
+                    key_points,
+                    progress,
                     session_count,
                     day_streak,
                     overall_progress
@@ -353,12 +410,13 @@ def get_current_topic(topic_id: int = None):
                     id,
                     name,
                     description,
-                    study_hours,
+                    key_points,
+                    progress,
                     session_count,
                     day_streak,
                     overall_progress
                 FROM topics
-                ORDER BY overall_progress DESC, study_hours DESC
+                ORDER BY overall_progress DESC, progress DESC
                 LIMIT 1
             """)
         
@@ -371,10 +429,11 @@ def get_current_topic(topic_id: int = None):
             "id": row[0],
             "name": row[1],
             "description": row[2],
-            "study_hours": row[3],
-            "session_count": row[4],
-            "day_streak": row[5],
-            "overall_progress": row[6]
+            "key_points": row[3],
+            "progress": row[4],
+            "session_count": row[5],
+            "day_streak": row[6],
+            "overall_progress": row[7]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -411,7 +470,7 @@ def get_topic_progress(topic_id: int = None):
                 LEFT JOIN lessons l ON t.id = l.topic_id
                 WHERE t.id = (
                     SELECT id FROM topics 
-                    ORDER BY overall_progress DESC, study_hours DESC 
+                    ORDER BY overall_progress DESC, progress DESC 
                     LIMIT 1
                 )
                 GROUP BY t.id, t.name
@@ -452,7 +511,7 @@ def get_next_up_topics():
             LEFT JOIN lessons l ON t.id = l.topic_id
             WHERE t.id != (
                 SELECT id FROM topics 
-                ORDER BY overall_progress DESC, study_hours DESC 
+                ORDER BY overall_progress DESC, progress DESC 
                 LIMIT 1
             )
             GROUP BY t.id, t.name, t.description, t.overall_progress
@@ -509,7 +568,7 @@ def get_study_goals(topic_id: int = None):
                 JOIN lessons l ON g.lesson_id = l.id
                 WHERE l.topic_id = (
                     SELECT id FROM topics 
-                    ORDER BY overall_progress DESC, study_hours DESC 
+                    ORDER BY overall_progress DESC, progress DESC 
                     LIMIT 1
                 )
                 ORDER BY g.id DESC
@@ -565,7 +624,7 @@ def get_improvement_areas(topic_id: int = None):
                 LEFT JOIN goals g ON l.id = g.lesson_id
                 WHERE t.id = (
                     SELECT id FROM topics 
-                    ORDER BY overall_progress DESC, study_hours DESC 
+                    ORDER BY overall_progress DESC, progress DESC 
                     LIMIT 1
                 )
                 GROUP BY l.id, l.title, t.name, l.progress
@@ -598,7 +657,7 @@ def get_study_metrics(topic_id: int = None):
                 SELECT 
                     t.id as topic_id,
                     t.name as topic_name,
-                    t.study_hours,
+                    t.progress,
                     t.session_count,
                     t.day_streak,
                     t.overall_progress
@@ -610,14 +669,14 @@ def get_study_metrics(topic_id: int = None):
                 SELECT 
                     t.id as topic_id,
                     t.name as topic_name,
-                    t.study_hours,
+                    t.progress,
                     t.session_count,
                     t.day_streak,
                     t.overall_progress
                 FROM topics t
                 WHERE t.id = (
                     SELECT id FROM topics 
-                    ORDER BY overall_progress DESC, study_hours DESC 
+                    ORDER BY overall_progress DESC, progress DESC 
                     LIMIT 1
                 )
             """)
@@ -629,7 +688,7 @@ def get_study_metrics(topic_id: int = None):
         return {
             "topic_id": row[0],
             "topic_name": row[1],
-            "study_hours": row[2],
+            "progress": row[2],
             "session_count": row[3],
             "day_streak": row[4],
             "overall_progress": row[5]

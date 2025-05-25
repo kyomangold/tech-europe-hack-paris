@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+import json
 
 # Connect to SQLite (or create new db)
 conn = sqlite3.connect("best_in_class.db")
@@ -20,7 +21,8 @@ CREATE TABLE topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     description TEXT,
-    study_hours REAL DEFAULT 0,
+    key_points TEXT,  -- Store as JSON string
+    progress REAL DEFAULT 0,
     session_count INTEGER DEFAULT 0,
     day_streak INTEGER DEFAULT 0,
     overall_progress REAL DEFAULT 0
@@ -64,11 +66,36 @@ CREATE TABLE uploaded_files (
 );
 """)
 
-# Insert mock data
-cursor.execute("INSERT INTO topics (name, description, overall_progress) VALUES (?, ?, ?)", 
-               ("Trigonometry", "Study of sine, cosine, tangent, etc.", 0.78))
-cursor.execute("INSERT INTO topics (name, description, overall_progress) VALUES (?, ?, ?)", 
-               ("Linear Algebra", "Vectors, matrices, and operations", 0.45))
+# Insert mock data with key points
+cursor.execute("""
+    INSERT INTO topics (name, description, key_points, progress, overall_progress) 
+    VALUES (?, ?, ?, ?, ?)
+""", (
+    "Trigonometry",
+    "Study of sine, cosine, tangent, etc.",
+    json.dumps([
+        "Understanding of basic trigonometric functions",
+        "Application of sine and cosine laws",
+        "Solving trigonometric equations"
+    ]),
+    5.5,
+    0.78
+))
+
+cursor.execute("""
+    INSERT INTO topics (name, description, key_points, progress, overall_progress) 
+    VALUES (?, ?, ?, ?, ?)
+""", (
+    "Linear Algebra",
+    "Vectors, matrices, and operations",
+    json.dumps([
+        "Matrix operations and properties",
+        "Vector spaces and subspaces",
+        "Eigenvalues and eigenvectors"
+    ]),
+    3.2,
+    0.45
+))
 
 # Fetch topic ids
 cursor.execute("SELECT id FROM topics WHERE name = 'Trigonometry'")
@@ -110,4 +137,4 @@ cursor.executemany("INSERT INTO sessions (topic_id, lesson_id, session_datetime,
 conn.commit()
 conn.close()
 
-"SQLite DB initialized with 2 topics, multiple lessons, goals, and sessions."
+print("SQLite DB initialized with 2 topics, multiple lessons, goals, and sessions.")
