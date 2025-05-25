@@ -1,5 +1,7 @@
 # agents_openai.py
 
+import aiofiles
+import openai
 from agents import Agent, function_tool, Runner
 
 # Define and initialize the agent only once
@@ -11,10 +13,15 @@ tutor_agent = Agent(
 )
 
 # File Upload (returns OpenAI file handle)
-async def upload_study_material(file_path):
-    file_handle = tutor_agent.files.upload(file_path)
-    return file_handle
+async def upload_study_material(file_path: str) -> str:
+    async with aiofiles.open(file_path, "rb") as f:
+        file_data = await f.read()
 
+    uploaded_file = await openai.files.create(
+        file=(file_path, file_data, "application/pdf"),
+        purpose="assistants"
+    )
+    return uploaded_file.id
 # 1. Function tools as plain async or sync functions
 @function_tool
 def generate_topic_summary(document_text: str, user_input: str) -> str:
@@ -76,14 +83,7 @@ async def call_generate_topic_summary(document_text: str, user_input: str):
     """Call the topic summary tool directly (function tool)."""
     result = await Runner.run(
         tutor_agent,
-        input=f"Summarize this topic for me.",
-        tool_calls=[{
-            "tool_name": "generate_topic_summary",
-            "args": {
-                "document_text": document_text,
-                "user_input": user_input
-            }
-        }]
+        input=f"Use the generate_topic_summary tool to summarize this topic. Document text: {document_text}\nUser input: {user_input}"
     )
     return result.final_output
 
@@ -91,13 +91,7 @@ async def call_generate_study_plan(topic_description: str):
     """Call the study planner tool directly (function tool)."""
     result = await Runner.run(
         tutor_agent,
-        input=f"Plan lessons for this topic.",
-        tool_calls=[{
-            "tool_name": "generate_study_plan",
-            "args": {
-                "topic_description": topic_description
-            }
-        }]
+        input=f"Use the generate_study_plan tool to create a study plan for this topic: {topic_description}"
     )
     return result.final_output
 
@@ -105,13 +99,6 @@ async def call_generate_topic_title(document_text: str, user_input: str):
     """Call the topic title tool directly (function tool)."""
     result = await Runner.run(
         tutor_agent,
-        input=f"Suggest a topic title.",
-        tool_calls=[{
-            "tool_name": "generate_topic_title",
-            "args": {
-                "document_text": document_text,
-                "user_input": user_input
-            }
-        }]
+        input=f"Use the generate_topic_title tool to suggest a title. Document text: {document_text}\nUser input: {user_input}"
     )
     return result.final_output

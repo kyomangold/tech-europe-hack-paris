@@ -12,8 +12,48 @@ export function NewTopicDialog({ isOpen, onClose, onSubmit, onTopicsUpdate }: Ne
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    const [fileId, setFileId] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            if (selectedFile.type !== 'application/pdf') {
+                setUploadError('Only PDF files are allowed');
+                return;
+            }
+            setFile(selectedFile);
+            setIsUploading(true);
+            setUploadError(null);
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                const response = await fetch('http://localhost:8000/api/upload-study-material', {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to upload file');
+                }
+                const result = await response.json();
+                if (!result.file_id) {
+                    throw new Error('No file ID received from server');
+                }
+                setFileId(result.file_id);
+                console.log('Uploaded file ID:', result.file_id);
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                setUploadError(error instanceof Error ? error.message : 'Failed to upload file');
+                setFile(null);
+                setFileId(null);
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,7 +62,7 @@ export function NewTopicDialog({ isOpen, onClose, onSubmit, onTopicsUpdate }: Ne
             const formData = new FormData();
             formData.append('name', name);
             if (description) formData.append('description', description);
-            if (file) formData.append('file', file);
+            if (fileId) formData.append('file_id', fileId);
 
             const response = await fetch('http://localhost:8000/api/create-topic', {
                 method: 'POST',
@@ -32,6 +72,9 @@ export function NewTopicDialog({ isOpen, onClose, onSubmit, onTopicsUpdate }: Ne
             if (!response.ok) {
                 throw new Error('Failed to create topic');
             }
+
+            const result = await response.json();
+            console.log('Created topic with file handle:', result.file_handle);
 
             await onSubmit({ name, description, file });
             // Refresh topics after successful creation
@@ -56,6 +99,8 @@ export function NewTopicDialog({ isOpen, onClose, onSubmit, onTopicsUpdate }: Ne
         setName('');
         setDescription('');
         setFile(null);
+        setFileId(null);
+        setUploadError(null);
         setIsSuccess(false);
         onClose();
     };
@@ -133,23 +178,31 @@ export function NewTopicDialog({ isOpen, onClose, onSubmit, onTopicsUpdate }: Ne
                                         <div className="border-2 border-dashed border-amber-300 rounded-lg p-4 text-center bg-amber-50">
                                             <input
                                                 type="file"
-                                                className="hidden"
-                                                id="file-upload"
-                                                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                                accept=".pdf"
+                                                onChange={handleFileChange}
+                                                className="block w-full text-sm text-amber-600
+                                                    file:mr-4 file:py-2 file:px-4
+                                                    file:rounded-md file:border-0
+                                                    file:text-sm file:font-medium
+                                                    file:bg-amber-600 file:text-white
+                                                    hover:file:bg-amber-700
+                                                    cursor-pointer"
                                             />
-                                            <label
-                                                htmlFor="file-upload"
-                                                className="cursor-pointer text-amber-600 hover:text-amber-700"
-                                            >
-                                                <div className="flex flex-col items-center">
-                                                    <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                                    </svg>
-                                                    <span className="font-medium">
-                                                        {file ? file.name : 'Upload Study Materials'}
-                                                    </span>
-                                                </div>
-                                            </label>
+                                            {file && (
+                                                <p className="mt-2 text-sm text-amber-700">
+                                                    Selected file: {file.name}
+                                                </p>
+                                            )}
+                                            {isUploading && (
+                                                <p className="mt-2 text-sm text-amber-600">
+                                                    Uploading...
+                                                </p>
+                                            )}
+                                            {uploadError && (
+                                                <p className="mt-2 text-sm text-red-600">
+                                                    {uploadError}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
 
