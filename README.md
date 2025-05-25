@@ -53,7 +53,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     BEY_AVATAR_ID=...
     ```
 
-4. Run the backend:
+4. Run the beyond presence avatar backend:
     ```bash
     python agent.py dev
     ```
@@ -74,4 +74,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     npm run dev
     ```
 
-The frontend will be available at e.g., http://localhost:3000
+4. Start the fastapi backend server:
+    ```bash
+    uvicorn fastapi_backend:app --reload
+    ```
