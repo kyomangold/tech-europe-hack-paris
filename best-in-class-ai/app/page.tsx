@@ -62,6 +62,13 @@ type TopicProgress = {
   completed_lessons: number;
 };
 
+type Lesson = {
+  id: number;
+  title: string;
+  progress: number;
+  // ...other fields
+};
+
 export default function Page() {
   const [room] = useState(new Room());
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -121,11 +128,25 @@ export default function Page() {
     }
   };
 
+  const getNextLessonId = async (topicId: number): Promise<number | null> => {
+    try {
+      const lessonsRes = await fetch(`http://localhost:8000/api/lessons?topic_id=${topicId}`);
+      if (lessonsRes.ok) {
+        const lessons: Lesson[] = await lessonsRes.json();
+        const nextLesson = lessons.find((l) => l.progress < 1);
+        return nextLesson ? nextLesson.id : null;
+      }
+    } catch { }
+    return null;
+  };
+
   const handleTopicClick = async (topicId: number) => {
     await Promise.all([
       fetchCurrentTopic(topicId),
       fetchTopicProgress(topicId)
     ]);
+
+    const lessonId = await getNextLessonId(topicId);
 
     // Set current session/topic in backend
     const topic = topics.find(t => t.id === topicId);
@@ -134,8 +155,10 @@ export default function Page() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         topic_id: topicId,
+        lesson_id: lessonId,
         session_id: null,
-        metadata: topic || null
+        metadata: topic || null,
+        mode: 'assistant'
       })
     });
 
@@ -199,18 +222,25 @@ export default function Page() {
   }, []);
 
   const onConnectButtonClicked = useCallback(async (teacherMode = false) => {
-    // Set current session/topic in backend before connecting
+    let lessonId = null;
     if (currentTopic) {
-      await fetch('http://localhost:8000/api/current-session', {
+      lessonId = await getNextLessonId(currentTopic.id);
+      const res = await fetch('http://localhost:8000/api/current-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topic_id: currentTopic.id,
+          lesson_id: lessonId,
           session_id: null,
           metadata: currentTopic,
           mode: teacherMode ? 'teacher' : 'assistant'
         })
       });
+      if (!res.ok) {
+        alert('Failed to set session mode. Please try again.');
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
     // Generate room connection details, including:
     //   - A random Room name
