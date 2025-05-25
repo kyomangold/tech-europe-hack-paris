@@ -7,7 +7,7 @@ import datetime
 import openai
 from openai import OpenAI
 
-from agents_openai import upload_study_material, give_more_info, call_generate_topic_summary, call_generate_study_plan, call_generate_topic_title
+from agents_openai import upload_study_material, give_more_info, call_generate_topic_summary, call_generate_study_plan
 
 
 
@@ -15,14 +15,13 @@ from agents_openai import upload_study_material, give_more_info, call_generate_t
 # Define FastAPI app
 app = FastAPI()
 
-# CORS configuration
+# CORS configuration (allow all for simplicity)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # Frontend origin
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
-    expose_headers=["*"]  # Exposes all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -43,12 +42,12 @@ async def api_upload_study_material(file: UploadFile = File(...)):
             content = await file.read()
             f.write(content)
         
-        # Upload to OpenAI with purpose="user_data"
-        client = OpenAI()
+        # Upload to OpenAI
         with open(file_path, "rb") as f:
+            client = OpenAI()
             uploaded_file = client.files.create(
                 file=f,
-                purpose="user_data"
+                purpose="assistants"
             )
         
         # Store in database
@@ -60,11 +59,10 @@ async def api_upload_study_material(file: UploadFile = File(...)):
                 VALUES (?, ?)
             """, (file_path, str(uploaded_file.id)))
             conn.commit()
-            file_id = cursor.lastrowid
         finally:
             conn.close()
         
-        return {"file_id": file_id, "file_handle": str(uploaded_file.id)}
+        return {"file_id": str(uploaded_file.id)}
     except Exception as e:
         print(f"Error uploading file: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail=str(e))
@@ -138,124 +136,36 @@ async def create_new_topic(
 async def create_topic(
     name: str = Form(...),
     description: str = Form(None),
-    file_id: str = Form(None)
+    file: UploadFile = File(None)
 ):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        # If file_id is provided, get the file handle from the database
-        file_handle = None
-        if file_id:
-            cursor.execute("SELECT file_handle FROM uploaded_files WHERE id = ?", (file_id,))
-            result = cursor.fetchone()
-            if result:
-                file_handle = result[0]
+        # Insert new topic into database
+        cursor.execute("""
+            INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
+            VALUES (?, ?, 0, 0, 0, 0)
+        """, (name, description))
+        topic_id = cursor.lastrowid
 
-        # Generate topic title and summary using AI if file is provided
-        topic_title = name
-        topic_summary = description
-        if file_handle:
-            try:
-                client = OpenAI()
-                # Use the file with GPT-4
-                response = client.responses.create(
-                    model="gpt-4.1",
-                    input=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "input_file",
-                                    "file_id": file_handle,
-                                },
-                                {
-                                    "type": "input_text",
-                                    "text": f"Generate a concise title and summary for this study material. Title should be academic and concise. Summary should be 2-3 sentences followed by 3-5 key points.",
-                                },
-                            ]
-                        }
-                    ]
-                )
-                
-                # Parse the response to get title and summary
-                ai_response = response.output_text
-                # Split the response into title and summary (assuming first line is title)
-                lines = ai_response.split('\n')
-                topic_title = lines[0].strip()
-                topic_summary = '\n'.join(lines[1:]).strip()
-                
-                # Generate study plan
-                study_plan_response = client.responses.create(
-                    model="gpt-4.1",
-                    input=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "input_file",
-                                    "file_id": file_handle,
-                                },
-                                {
-                                    "type": "input_text",
-                                    "text": "Create a study plan with 3-5 high-level lessons, each with a short description.",
-                                },
-                            ]
-                        }
-                    ]
-                )
-                study_plan = study_plan_response.output_text
-                
-                # Insert new topic into database
-                cursor.execute("""
-                    INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
-                    VALUES (?, ?, 0, 0, 0, 0)
-                """, (topic_title, topic_summary))
-                topic_id = cursor.lastrowid
-
-                # Create lessons from study plan
-                lessons = study_plan.split('\n')
-                for lesson in lessons:
-                    if lesson.strip():
-                        cursor.execute("""
-                            INSERT INTO lessons (topic_id, title, progress)
-                            VALUES (?, ?, 0)
-                        """, (topic_id, lesson.strip()))
-
-                # Update the topic_id in uploaded_files
-                cursor.execute("""
-                    UPDATE uploaded_files 
-                    SET topic_id = ? 
-                    WHERE id = ?
-                """, (topic_id, file_id))
-
-                conn.commit()
-                return {
-                    "id": topic_id,
-                    "name": topic_title,
-                    "description": topic_summary,
-                    "file_handle": file_handle,
-                    "study_plan": study_plan
-                }
-            except Exception as e:
-                print(f"Error processing file content: {str(e)}")
-                raise HTTPException(status_code=500, detail=f"Error processing file content: {str(e)}")
-        else:
-            # If no file is provided, just create the topic with the provided name and description
+        # If file was uploaded, save it and record it
+        if file:
+            if file.content_type != 'application/pdf':
+                raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+            file_path = f"/tmp/{file.filename}"
+            with open(file_path, "wb") as f:
+                content = await file.read()
+                f.write(content)
+            file_handle = await upload_study_material(file_path)
             cursor.execute("""
-                INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
-                VALUES (?, ?, 0, 0, 0, 0)
-            """, (topic_title, topic_summary))
-            topic_id = cursor.lastrowid
-            conn.commit()
-            
-            return {
-                "id": topic_id,
-                "name": topic_title,
-                "description": topic_summary
-            }
+                INSERT INTO uploaded_files (topic_id, file_path, file_handle)
+                VALUES (?, ?, ?)
+            """, (topic_id, file_path, str(file_handle.id)))
+
+        conn.commit()
+        return {"id": topic_id, "name": name, "description": description}
     except Exception as e:
         conn.rollback()
-        print(f"Error creating topic: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
@@ -681,133 +591,3 @@ def get_improvement_areas():
 @app.get("/api/study-metrics")
 def get_study_metrics():
     return {"message": "Study metrics placeholder"}
-
-@app.get("/api/next-up-lessons")
-def get_next_up_lessons(topic_id: int = None):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    try:
-        # If topic_id is provided, get lessons for that topic, otherwise get lessons for current topic
-        if topic_id is not None:
-            cursor.execute("""
-                SELECT 
-                    l.id,
-                    l.title,
-                    l.progress,
-                    t.name as topic_name,
-                    t.description as topic_description
-                FROM lessons l
-                JOIN topics t ON l.topic_id = t.id
-                WHERE t.id = ? AND l.progress < 1
-                ORDER BY l.progress ASC
-                LIMIT 3
-            """, (topic_id,))
-        else:
-            cursor.execute("""
-                SELECT 
-                    l.id,
-                    l.title,
-                    l.progress,
-                    t.name as topic_name,
-                    t.description as topic_description
-                FROM lessons l
-                JOIN topics t ON l.topic_id = t.id
-                WHERE t.id = (
-                    SELECT id FROM topics 
-                    ORDER BY overall_progress DESC, study_hours DESC 
-                    LIMIT 1
-                ) AND l.progress < 1
-                ORDER BY l.progress ASC
-                LIMIT 3
-            """)
-        
-        rows = cursor.fetchall()
-        return [{
-            "id": row[0],
-            "title": row[1],
-            "progress": row[2],
-            "topic_name": row[3],
-            "topic_description": row[4]
-        } for row in rows]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        conn.close()
-
-@app.post("/api/start-lesson")
-async def start_lesson(lesson_id: int = Form(...)):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    try:
-        # Get lesson details
-        cursor.execute("""
-            SELECT 
-                l.id,
-                l.title,
-                l.progress,
-                t.id as topic_id,
-                t.name as topic_name,
-                t.description as topic_description
-            FROM lessons l
-            JOIN topics t ON l.topic_id = t.id
-            WHERE l.id = ?
-        """, (lesson_id,))
-        
-        row = cursor.fetchone()
-        if not row:
-            raise HTTPException(status_code=404, detail="Lesson not found")
-            
-        return {
-            "id": row[0],
-            "title": row[1],
-            "progress": row[2],
-            "topic_id": row[3],
-            "topic_name": row[4],
-            "topic_description": row[5]
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        conn.close()
-
-@app.post("/api/get-lesson-info")
-async def get_lesson_info(lesson_id: int = Form(...)):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    try:
-        # Get lesson details and goals
-        cursor.execute("""
-            SELECT 
-                l.id,
-                l.title,
-                l.progress,
-                t.id as topic_id,
-                t.name as topic_name,
-                t.description as topic_description,
-                GROUP_CONCAT(g.description) as goals
-            FROM lessons l
-            JOIN topics t ON l.topic_id = t.id
-            LEFT JOIN goals g ON l.id = g.lesson_id
-            WHERE l.id = ?
-            GROUP BY l.id, l.title, l.progress, t.id, t.name, t.description
-        """, (lesson_id,))
-        
-        row = cursor.fetchone()
-        if not row:
-            raise HTTPException(status_code=404, detail="Lesson not found")
-            
-        goals = row[6].split(',') if row[6] else []
-            
-        return {
-            "id": row[0],
-            "title": row[1],
-            "progress": row[2],
-            "topic_id": row[3],
-            "topic_name": row[4],
-            "topic_description": row[5],
-            "goals": goals
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        conn.close()
