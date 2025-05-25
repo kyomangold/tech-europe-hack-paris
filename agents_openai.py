@@ -4,25 +4,7 @@ import aiofiles
 import openai
 from agents import Agent, function_tool, Runner
 
-# Define and initialize the agent only once
-tutor_agent = Agent(
-    name="TutorAgent",
-    instructions="You are a helpful AI tutor. Use tools and files as needed.",
-    tools=["web-search"],
-    model="gpt-4o"
-)
-
-# File Upload (returns OpenAI file handle)
-async def upload_study_material(file_path: str) -> str:
-    async with aiofiles.open(file_path, "rb") as f:
-        file_data = await f.read()
-
-    uploaded_file = await openai.files.create(
-        file=(file_path, file_data, "application/pdf"),
-        purpose="assistants"
-    )
-    return uploaded_file.id
-# 1. Function tools as plain async or sync functions
+# Define function tools
 @function_tool
 def generate_topic_summary(document_text: str, user_input: str) -> str:
     """
@@ -59,46 +41,74 @@ def generate_topic_title(document_text: str, user_input: str) -> str:
         "Suggest a single-word or short academic phrase as a topic title, e.g., 'Trigonometry', 'Gradient Descent', or 'Schrödinger Equation'."
     )
 
-# 2. Define the agent with tools (hosted and function tools together)
+# Define the agent with tools
 tutor_agent = Agent(
     name="TutorAgent",
     instructions="You are a helpful AI tutor. Use tools and files as needed.",
     tools=[
-        "web-search",                 # hosted tool: web search
-        generate_topic_summary,       # your Python function tool
-        generate_study_plan,           # your Python function tool
-        generate_topic_title          # your Python function tool
+        generate_topic_summary,
+        generate_study_plan,
+        generate_topic_title
     ],
     model="gpt-4o"
 )
 
-# 3. Utility functions to run agent/tools
+# File Upload (returns OpenAI file handle)
+async def upload_study_material(file_path: str) -> str:
+    async with aiofiles.open(file_path, "rb") as f:
+        file_data = await f.read()
 
+    uploaded_file = await openai.files.create(
+        file=(file_path, file_data, "application/pdf"),
+        purpose="assistants"
+    )
+    return uploaded_file.id
+
+# Utility functions to run agent/tools
 async def give_more_info(query: str):
-    """Invoke agent on a web query (uses web-search tool)."""
-    result = await Runner.run(tutor_agent, input=query)
-    return result.final_output
+    """Invoke agent on a web query."""
+    try:
+        result = await Runner.run(
+            tutor_agent,
+            input=query
+        )
+        return result.final_output
+    except Exception as e:
+        print(f"Error in give_more_info: {str(e)}")
+        return f"I apologize, but I encountered an error while processing your request: {str(e)}"
 
 async def call_generate_topic_summary(document_text: str, user_input: str):
-    """Call the topic summary tool directly (function tool)."""
-    result = await Runner.run(
-        tutor_agent,
-        input=f"Use the generate_topic_summary tool to summarize this topic. Document text: {document_text}\nUser input: {user_input}"
-    )
-    return result.final_output
+    """Call the topic summary tool directly."""
+    try:
+        result = await Runner.run(
+            tutor_agent,
+            input=f"Use the generate_topic_summary tool to summarize this topic. Document text: {document_text}\nUser input: {user_input}"
+        )
+        return result.final_output
+    except Exception as e:
+        print(f"Error in call_generate_topic_summary: {str(e)}")
+        return f"I apologize, but I encountered an error while generating the summary: {str(e)}"
 
 async def call_generate_study_plan(topic_description: str):
-    """Call the study planner tool directly (function tool)."""
-    result = await Runner.run(
-        tutor_agent,
-        input=f"Use the generate_study_plan tool to create a study plan for this topic: {topic_description}"
-    )
-    return result.final_output
+    """Call the study planner tool directly."""
+    try:
+        result = await Runner.run(
+            tutor_agent,
+            input=f"Use the generate_study_plan tool to create a study plan for this topic: {topic_description}"
+        )
+        return result.final_output
+    except Exception as e:
+        print(f"Error in call_generate_study_plan: {str(e)}")
+        return f"I apologize, but I encountered an error while generating the study plan: {str(e)}"
 
 async def call_generate_topic_title(document_text: str, user_input: str):
-    """Call the topic title tool directly (function tool)."""
-    result = await Runner.run(
-        tutor_agent,
-        input=f"Use the generate_topic_title tool to suggest a title. Document text: {document_text}\nUser input: {user_input}"
-    )
-    return result.final_output
+    """Call the topic title tool directly."""
+    try:
+        result = await Runner.run(
+            tutor_agent,
+            input=f"Use the generate_topic_title tool to suggest a title. Document text: {document_text}\nUser input: {user_input}"
+        )
+        return result.final_output
+    except Exception as e:
+        print(f"Error in call_generate_topic_title: {str(e)}")
+        return f"I apologize, but I encountered an error while generating the title: {str(e)}"

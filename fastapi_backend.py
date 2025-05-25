@@ -15,13 +15,14 @@ from agents_openai import upload_study_material, give_more_info, call_generate_t
 # Define FastAPI app
 app = FastAPI()
 
-# CORS configuration (allow all for simplicity)
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # Frontend origin
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+    expose_headers=["*"]  # Exposes all headers
 )
 
 
@@ -680,3 +681,133 @@ def get_improvement_areas():
 @app.get("/api/study-metrics")
 def get_study_metrics():
     return {"message": "Study metrics placeholder"}
+
+@app.get("/api/next-up-lessons")
+def get_next_up_lessons(topic_id: int = None):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # If topic_id is provided, get lessons for that topic, otherwise get lessons for current topic
+        if topic_id is not None:
+            cursor.execute("""
+                SELECT 
+                    l.id,
+                    l.title,
+                    l.progress,
+                    t.name as topic_name,
+                    t.description as topic_description
+                FROM lessons l
+                JOIN topics t ON l.topic_id = t.id
+                WHERE t.id = ? AND l.progress < 1
+                ORDER BY l.progress ASC
+                LIMIT 3
+            """, (topic_id,))
+        else:
+            cursor.execute("""
+                SELECT 
+                    l.id,
+                    l.title,
+                    l.progress,
+                    t.name as topic_name,
+                    t.description as topic_description
+                FROM lessons l
+                JOIN topics t ON l.topic_id = t.id
+                WHERE t.id = (
+                    SELECT id FROM topics 
+                    ORDER BY overall_progress DESC, study_hours DESC 
+                    LIMIT 1
+                ) AND l.progress < 1
+                ORDER BY l.progress ASC
+                LIMIT 3
+            """)
+        
+        rows = cursor.fetchall()
+        return [{
+            "id": row[0],
+            "title": row[1],
+            "progress": row[2],
+            "topic_name": row[3],
+            "topic_description": row[4]
+        } for row in rows]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+@app.post("/api/start-lesson")
+async def start_lesson(lesson_id: int = Form(...)):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # Get lesson details
+        cursor.execute("""
+            SELECT 
+                l.id,
+                l.title,
+                l.progress,
+                t.id as topic_id,
+                t.name as topic_name,
+                t.description as topic_description
+            FROM lessons l
+            JOIN topics t ON l.topic_id = t.id
+            WHERE l.id = ?
+        """, (lesson_id,))
+        
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Lesson not found")
+            
+        return {
+            "id": row[0],
+            "title": row[1],
+            "progress": row[2],
+            "topic_id": row[3],
+            "topic_name": row[4],
+            "topic_description": row[5]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+@app.post("/api/get-lesson-info")
+async def get_lesson_info(lesson_id: int = Form(...)):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        # Get lesson details and goals
+        cursor.execute("""
+            SELECT 
+                l.id,
+                l.title,
+                l.progress,
+                t.id as topic_id,
+                t.name as topic_name,
+                t.description as topic_description,
+                GROUP_CONCAT(g.description) as goals
+            FROM lessons l
+            JOIN topics t ON l.topic_id = t.id
+            LEFT JOIN goals g ON l.id = g.lesson_id
+            WHERE l.id = ?
+            GROUP BY l.id, l.title, l.progress, t.id, t.name, t.description
+        """, (lesson_id,))
+        
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Lesson not found")
+            
+        goals = row[6].split(',') if row[6] else []
+            
+        return {
+            "id": row[0],
+            "title": row[1],
+            "progress": row[2],
+            "topic_id": row[3],
+            "topic_name": row[4],
+            "topic_description": row[5],
+            "goals": goals
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()

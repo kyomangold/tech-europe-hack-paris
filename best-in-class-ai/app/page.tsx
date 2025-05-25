@@ -70,13 +70,22 @@ type TopicProgress = {
   completed_lessons: number;
 };
 
-type NextUpTopic = {
+type NextUpLesson = {
   id: number;
-  name: string;
-  description: string;
+  title: string;
   progress: number;
-  total_lessons: number;
-  completed_lessons: number;
+  topic_name: string;
+  topic_description: string;
+};
+
+type SelectedLesson = {
+  id: number;
+  title: string;
+  progress: number;
+  topic_id: number;
+  topic_name: string;
+  topic_description: string;
+  goals?: string[];
 };
 
 export default function Page() {
@@ -84,7 +93,9 @@ export default function Page() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
   const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(null);
-  const [nextUpTopics, setNextUpTopics] = useState<NextUpTopic[]>([]);
+  const [nextUpLessons, setNextUpLessons] = useState<NextUpLesson[]>([]);
+  const [selectedLesson, setSelectedLesson] = useState<SelectedLesson | null>(null);
+  const [isLoadingLesson, setIsLoadingLesson] = useState(false);
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false);
 
   const fetchCurrentTopic = async (topicId?: number) => {
@@ -138,13 +149,78 @@ export default function Page() {
     }
   };
 
+  const fetchNextUpLessons = async (topicId?: number) => {
+    try {
+      const url = new URL('http://localhost:8000/api/next-up-lessons');
+      if (topicId !== undefined) {
+        url.searchParams.append('topic_id', topicId.toString());
+      }
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error('Failed to fetch next up lessons');
+      }
+      const data = await response.json();
+      setNextUpLessons(data);
+    } catch (error) {
+      console.error('Error fetching next up lessons:', error);
+    }
+  };
+
+  const handleLessonSelect = async (lessonId: number) => {
+    setIsLoadingLesson(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/get-lesson-info', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `lesson_id=${lessonId}`,
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch lesson info');
+      }
+      const data = await response.json();
+      setSelectedLesson(data);
+    } catch (error) {
+      console.error('Error fetching lesson info:', error);
+    } finally {
+      setIsLoadingLesson(false);
+    }
+  };
+
+  const handleStartLesson = async () => {
+    if (!selectedLesson) return;
+
+    setIsLoadingLesson(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/start-lesson', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `lesson_id=${selectedLesson.id}`,
+      });
+      if (!response.ok) {
+        throw new Error('Failed to start lesson');
+      }
+      const data = await response.json();
+      // Update the current topic and trigger the study session
+      await handleTopicClick(data.topic_id);
+      onConnectButtonClicked();
+    } catch (error) {
+      console.error('Error starting lesson:', error);
+    } finally {
+      setIsLoadingLesson(false);
+    }
+  };
+
   const handleTopicClick = async (topicId: number) => {
     await Promise.all([
       fetchCurrentTopic(topicId),
-      fetchTopicProgress(topicId)
+      fetchTopicProgress(topicId),
+      fetchNextUpLessons(topicId)
     ]);
 
-    // Dispatch custom event for topic change
     window.dispatchEvent(new CustomEvent('topicChange', {
       detail: { topicId }
     }));
@@ -195,42 +271,10 @@ export default function Page() {
       }
     };
 
-    const fetchNextUpTopics = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/next-up-topics');
-        if (!response.ok) {
-          throw new Error('Failed to fetch next up topics');
-        }
-        const data = await response.json();
-        setNextUpTopics(data);
-      } catch (error) {
-        console.error('Error fetching next up topics:', error);
-        // Mock data for development
-        setNextUpTopics([
-          {
-            id: 2,
-            name: "Linear Algebra",
-            description: "Vectors, matrices, and operations",
-            progress: 0.45,
-            total_lessons: 4,
-            completed_lessons: 1
-          },
-          {
-            id: 3,
-            name: "Calculus",
-            description: "Derivatives and integrals",
-            progress: 0.0,
-            total_lessons: 6,
-            completed_lessons: 0
-          }
-        ]);
-      }
-    };
-
     fetchTopics();
     fetchCurrentTopic();
     fetchTopicProgress();
-    fetchNextUpTopics();
+    fetchNextUpLessons();
   }, []);
 
   const onConnectButtonClicked = useCallback(async () => {
@@ -353,13 +397,42 @@ export default function Page() {
               {/* Left Column - Buttons */}
               <div className="col-span-1 flex flex-col gap-4">
                 <button
-                  className="p-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center justify-center shadow-sm"
-                  onClick={onConnectButtonClicked}
+                  className="p-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center justify-center shadow-sm disabled:opacity-50"
+                  onClick={selectedLesson ? handleStartLesson : onConnectButtonClicked}
+                  disabled={isLoadingLesson}
                 >
-                  <span className="font-medium">Start Next Study Session</span>
+                  <span className="font-medium">
+                    {isLoadingLesson ? 'Loading...' : selectedLesson ? 'Start Study Session' : 'Start Next Study Session'}
+                  </span>
                 </button>
-                <button className="p-4 bg-amber-500 text-white rounded-lg hover:bg-amber-600 flex items-center justify-center shadow-sm">
-                  <span className="font-medium">Give More Information</span>
+                <button
+                  className="p-4 bg-amber-500 text-white rounded-lg hover:bg-amber-600 flex items-center justify-center shadow-sm disabled:opacity-50"
+                  onClick={() => {
+                    if (selectedLesson) {
+                      const query = `Tell me more about ${selectedLesson.title} in the context of ${selectedLesson.topic_name}`;
+                      fetch('http://localhost:8000/api/give-more-info', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `query=${encodeURIComponent(query)}`,
+                      });
+                    } else {
+                      // Default behavior when no lesson is selected
+                      fetch('http://localhost:8000/api/give-more-info', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'query=Tell me more about the current topic',
+                      });
+                    }
+                  }}
+                  disabled={isLoadingLesson}
+                >
+                  <span className="font-medium">
+                    {isLoadingLesson ? 'Loading...' : 'Give More Information'}
+                  </span>
                 </button>
 
                 {/* Progress Section */}
@@ -388,18 +461,39 @@ export default function Page() {
                 <div className="p-4 bg-white rounded-lg shadow-sm">
                   <h4 className="text-sm font-medium text-amber-900 mb-3">Next Up</h4>
                   <div className="space-y-3">
-                    {nextUpTopics.map((topic) => (
-                      <div key={topic.id} className="flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors">
+                    {nextUpLessons.map((lesson) => (
+                      <div
+                        key={lesson.id}
+                        className={`flex items-center gap-3 p-2 hover:bg-amber-50 rounded-md cursor-pointer transition-colors ${selectedLesson?.id === lesson.id ? 'bg-amber-100' : ''
+                          }`}
+                        onClick={() => handleLessonSelect(lesson.id)}
+                      >
                         <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                        <div>
-                          <p className="text-sm font-medium text-amber-900">{topic.name}</p>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-amber-900">{lesson.title}</p>
                           <p className="text-xs text-amber-700">
-                            {topic.completed_lessons}/{topic.total_lessons} lessons • {Math.round(topic.progress * 100)}% complete
+                            {lesson.topic_name} • {Math.round(lesson.progress * 100)}% complete
                           </p>
                         </div>
                       </div>
                     ))}
                   </div>
+                  {selectedLesson && (
+                    <div className="mt-4 p-3 bg-amber-50 rounded-lg">
+                      <h5 className="text-sm font-medium text-amber-900 mb-2">Selected Lesson</h5>
+                      <p className="text-sm text-amber-800 mb-2">{selectedLesson.title}</p>
+                      {selectedLesson.goals && selectedLesson.goals.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-medium text-amber-900 mb-1">Learning Goals:</p>
+                          <ul className="text-xs text-amber-800 list-disc list-inside">
+                            {selectedLesson.goals.map((goal, index) => (
+                              <li key={index}>{goal}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
