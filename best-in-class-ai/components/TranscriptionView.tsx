@@ -13,9 +13,12 @@ export default function TranscriptionView() {
   }, [combinedTranscriptions]);
 
   return (
-    <div className="h-full w-full">
+    <div className="h-[37.5vh] w-full overflow-hidden">
       {/* Content */}
-      <div ref={containerRef} className="h-full flex flex-col gap-2 px-2">
+      <div
+        ref={containerRef}
+        className="h-full flex flex-col gap-2 px-2 overflow-y-auto"
+      >
         {combinedTranscriptions.map((segment) => (
           <div
             id={segment.id}
