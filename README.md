@@ -80,5 +80,5 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     ```
 # Contributors 
 
-Kyo Mangold
-Daniel Gisler
+- Kyo Mangold
+- Daniel Gisler
