@@ -6,6 +6,7 @@ from pydantic import BaseModel
 import datetime
 import openai
 from openai import OpenAI
+import json
 
 from agents_openai import upload_study_material, give_more_info, call_generate_topic_summary, call_generate_study_plan, call_generate_topic_title
 
@@ -67,71 +68,6 @@ async def api_upload_study_material(file: UploadFile = File(...)):
     except Exception as e:
         print(f"Error uploading file: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/new-topic")
-async def create_new_topic(
-    name: str = Form(...),
-    description: str = Form(...),
-    file: UploadFile = File(None)
-):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    try:
-        # 1. Upload file if provided
-        file_id = None
-        if file:
-            file_path = f"/tmp/{file.filename}"
-            with open(file_path, "wb") as f:
-                content = await file.read()
-                f.write(content)
-            file_handle = await upload_study_material(file_path)
-            file_id = str(file_handle.id)
-
-        # 2. Generate topic summary using AI
-        document_text = "..."  # TODO: retrieve from file_id if available
-        topic_summary = await call_generate_topic_summary(document_text, description)
-
-        # 3. Generate study plan
-        study_plan = await call_generate_study_plan(description)
-
-        # 4. Insert new topic into database
-        cursor.execute("""
-            INSERT INTO topics (name, description, study_hours, session_count, day_streak, overall_progress)
-            VALUES (?, ?, 0, 0, 0, 0)
-        """, (name, description))
-        topic_id = cursor.lastrowid
-
-        # 5. Create lessons from study plan
-        # This is a simplified version - you might want to parse the study plan more carefully
-        lessons = study_plan.split('\n')
-        for lesson in lessons:
-            if lesson.strip():
-                cursor.execute("""
-                    INSERT INTO lessons (topic_id, title, progress)
-                    VALUES (?, ?, 0)
-                """, (topic_id, lesson.strip()))
-
-        # 6. If file was uploaded, record it
-        if file_id:
-            cursor.execute("""
-                INSERT INTO uploaded_files (topic_id, file_path)
-                VALUES (?, ?)
-            """, (topic_id, file_path))
-
-        conn.commit()
-
-        return {
-            "id": topic_id,
-            "name": name,
-            "description": description,
-            "summary": topic_summary,
-            "study_plan": study_plan
-        }
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        conn.close()
 
 @app.post("/api/create-topic")
 async def create_topic(
@@ -206,7 +142,23 @@ async def create_topic(
                                 },
                                 {
                                     "type": "input_text",
-                                    "text": "Create a study plan with 3-5 high-level lessons, each with a short description.",
+                                    "text": f"Create a study plan for this topic based on the summary and the material in the file:\n\n{topic_summary}\n\n"
+                                    "Return the response in the following JSON format:\n"
+                                    "{\n"
+                                    '  "lessons": [\n'
+                                    '    {\n'
+                                    '      "title": "Lesson Title",\n'
+                                    '      "description": "Short description of the lesson"\n'
+                                    '    },\n'
+                                    '    ...\n'
+                                    '  ]\n'
+                                    "}\n\n"
+                                    "Rules:\n"
+                                    "1. Maximum 5 lessons\n"
+                                    "2. Each lesson must have a clear, concise title\n"
+                                    "3. Each lesson must have a brief description\n"
+                                    "4. Return ONLY the JSON, no other text\n"
+                                    "5. Ensure the JSON is valid and properly formatted",
                                 },
                             ]
                         }
@@ -221,14 +173,17 @@ async def create_topic(
                 """, (topic_title, topic_summary))
                 topic_id = cursor.lastrowid
 
-                # Create lessons from study plan
-                lessons = study_plan.split('\n')
-                for lesson in lessons:
-                    if lesson.strip():
+                # Parse JSON study plan and create lessons
+                try:
+                    study_plan_json = json.loads(study_plan)
+                    for lesson in study_plan_json["lessons"]:
                         cursor.execute("""
                             INSERT INTO lessons (topic_id, title, progress)
                             VALUES (?, ?, 0)
-                        """, (topic_id, lesson.strip()))
+                        """, (topic_id, lesson["title"]))
+                except json.JSONDecodeError as e:
+                    print(f"Error parsing study plan JSON: {str(e)}")
+                    raise HTTPException(status_code=500, detail="Invalid study plan format")
 
                 # Update the topic_id in uploaded_files
                 cursor.execute("""

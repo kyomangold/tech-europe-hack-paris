@@ -39,12 +39,28 @@ def generate_topic_summary(document_text: str, user_input: str) -> str:
 @function_tool
 def generate_study_plan(topic_description: str) -> str:
     """
-    Given a topic description, create a study plan:
-    - List 3–5 high-level lessons, each with a short description.
+    Given a topic description, create a study plan with 3-5 lessons in JSON format.
+    Each lesson should have a title and a short description.
+    The output will be a JSON string that can be parsed and inserted into the database.
     """
     return (
         f"Create a study plan for this topic:\n\n{topic_description}\n\n"
-        "List 3–5 high-level lessons, each with a short description."
+        "Return the response in the following JSON format:\n"
+        "{\n"
+        '  "lessons": [\n'
+        '    {\n'
+        '      "title": "Lesson Title",\n'
+        '      "description": "Short description of the lesson"\n'
+        '    },\n'
+        '    ...\n'
+        '  ]\n'
+        "}\n\n"
+        "Rules:\n"
+        "1. Maximum 5 lessons\n"
+        "2. Each lesson must have a clear, concise title\n"
+        "3. Each lesson must have a brief description\n"
+        "4. Return ONLY the JSON, no other text\n"
+        "5. Ensure the JSON is valid and properly formatted"
     )
     
 @function_tool
