@@ -1,31 +1,45 @@
-# README
+# Project README
 
 ## Overview
-This repository contains a project designed for performing information retrieval using pgvector. It supports retrieving context chunks through search functionality.
+
+This repository implements a system for retrieving context chunks using vector-based search with the `pgvector` extension. The primary functionality revolves around performing search queries that retrieve relevant context chunks based on a specific vectorized representation.
 
 ## Key Components
-- **Search Functionality**: The core functionality revolves around performing searches on data stored in a pgvector format.
+
+- **pgvector Search:** The core functionality allows for performing searches via the `pgvector` extension, which is tailored for working with vector embeddings in PostgreSQL.
 
 ## Installation Instructions
-To install the necessary dependencies and set up the project, please follow these steps:
-1. Ensure you have Python installed on your machine.
-2. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   ```
-3. Navigate into the project directory:
-   ```bash
-   cd <project-directory>
-   ```
-4. Install required packages using pip:
-   ```bash
-   pip install -r requirements.txt
-   ```
+
+1. Ensure you have PostgreSQL installed with the `pgvector` extension enabled. You can follow the official documentation to set up the extension.
+2. Clone the repository to your local machine.
+3. Install any necessary dependencies as mentioned in the project setup.
 
 ## Quick Start
-To use the functionality of this project, you may perform the following steps (detailed examples or usage steps were not available in the codebase):
-1. Set up your database and ensure it is running.
-2. Connect to your database through the provided configuration settings.
-3. Invoke the search functionality to retrieve context chunks.
 
-**Note**: Specific usage examples and configurations are not provided in the codebase. Please refer to the source code for additional implementation details.
+To use the functionality provided in this repository:
+
+1. Set up your PostgreSQL database with the required schema including the vector column.
+2. Insert the vector representations of the data you want to query against.
+3. Run search queries using the provided methods to retrieve relevant context chunks based on input vectors.
+
+*Note: For detailed usage and specific query examples, please refer to the code comments or documentation within the project files.* 
+
+### Example Usage
+
+```python
+# Example code showing how to perform a search
+# This is a placeholder; actual implementation will depend on the codebase
+
+results = search_vectors(input_vector)
+for result in results:
+    print(result)
+```
+
+*Further usage examples can be added once the specific querying functions are detailed in the implementation.*
+
+## Contribution 
+
+If you wish to contribute to this project, please fork the repository and create a pull request with your proposed changes. 
+
+---
+*Note: The above information is derived from the codebase and any additional context should be explored within the project files.*
