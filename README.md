@@ -15,7 +15,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
 - Next.js application with TypeScript and Tailwind CSS
 - Components:
   - `NoAgentNotification.tsx`: UI for when no agent is available
-  - `TranscriptionView.tsx`: Real-time transcription display
+  - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility
   - `CloseIcon.tsx`: UI component for closing modals
 - App Structure:
   - `app/page.tsx`: Main application page
