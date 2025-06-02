@@ -9,6 +9,8 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
 
 ### Backend
 - `agent.py`: Main LiveKit agent implementation with Beyond Presence
+- `fastapi_backend.py`: Main backend implementation to connect everything to the frontend
+- `agents_openai.py`: OpenAI agent implementation
 - `requirements.txt`: Python dependencies
 
 ### Frontend
@@ -78,7 +80,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     ```bash
     uvicorn fastapi_backend:app --reload
     ```
-    
+
 # Contributors 
 
 - Kyo Mangold (https://github.com/kyomangold)
