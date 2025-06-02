@@ -1,42 +1,79 @@
-## Information Flows Analysis
+### Information Flows Description
 
-### 1. Flow from `fastapi_backend` to `agents_openai`
-- **Source**: fastapi_backend
-- **Destination**: agents_openai
-- **Data Type**: Unknown
-- **Purpose**: The flow suggests interaction between the backend service and an AI agent component, likely for processing requests or generating responses.
+1. **Flow from FastAPI Backend to Agents OpenAI**
+   - **Source**: FastAPI Backend
+   - **Destination**: Agents OpenAI
+   - **Data Type**: Unknown (inferred based on the context, likely a request or interaction data)
+   - **Purpose**: To engage or communicate with OpenAI's agents, possibly for processing requests or generating responses.
 
-### 2. Flow from `agent` to external systems
-- **Source**: agent
-- **Destination**: Unknown external systems (metadata, mode, topic_id)
-- **Data Type**: 
-  - metadata
-  - mode
-  - topic_id
-- **Purpose**: These flows indicate that the `agent` component is communicating with various external systems to retrieve or send data relevant to its operations.
+2. **Flow from Agent to Metadata**
+   - **Source**: Agent
+   - **Destination**: Metadata
+   - **Data Type**: Unknown
+   - **Purpose**: To send metadata possibly defining or describing contextually relevant information for dealings with the agent.
 
-### 3. Flow from `fastapi_backend` to multiple external API connections
-- **Source**: fastapi_backend
-- **Destination**: Various external APIs (e.g., _api_connection_details, _api_create_topic, _api_current_session, etc.)
-- **Data Type**: 
-  - _api_connection_details
-  - _api_create_topic
-  - _api_current_session
-  - _api_current_topic
-  - _api_give_more_info
-  - _api_improvement_areas
-  - _api_next_up_topics
-  - _api_study_goals
-  - _api_study_metrics
-  - _api_study_planner
-  - _api_study_sessions
-  - _api_topic_progress
-  - _api_topics
-  - _api_upload_study_material
-  - http___localhost_3000
-  - lesson_id
-  - session_id
-- **Purpose**: These flows represent a series of communications to various APIs to support functions related to topics, sessions, study material, and metrics, indicating that the backend is likely providing a comprehensive study management system.
+3. **Flow from Agent to Mode**
+   - **Source**: Agent
+   - **Destination**: Mode
+   - **Data Type**: Unknown
+   - **Purpose**: To update or communicate the current mode of operation to another component or system.
+
+4. **Flow from Agent to Topic ID**
+   - **Source**: Agent
+   - **Destination**: Topic ID
+   - **Data Type**: Unknown
+   - **Purpose**: To transmit the identifier of the current topic being handled or discussed.
+
+5. **Multiple Flows from FastAPI Backend to External APIs**
+   - **Source**: FastAPI Backend
+   - **Destination**: Various external APIs
+     - _api_connection_details
+     - _api_create_topic
+     - _api_current_session
+     - _api_current_topic
+     - _api_give_more_info
+     - _api_improvement_areas
+     - _api_next_up_topics
+     - _api_study_goals
+     - _api_study_metrics
+     - _api_study_planner
+     - _api_study_sessions
+     - _api_topic_progress
+     - _api_topics
+     - _api_upload_study_material
+     - http___localhost_3000
+   - **Data Type**: Unknown (inferred as API requests)
+   - **Purpose**: To communicate various types of information and requests to external services related to study, session management, and possibly user engagements.
+
+6. **Flows from FastAPI Backend to Lesson ID**
+   - **Source**: FastAPI Backend
+   - **Destination**: Lesson ID
+   - **Data Type**: Unknown
+   - **Purpose**: To manage or retrieve information related to a specific lesson, likely in the context of the educational platform.
+
+7. **Flow from FastAPI Backend to Metadata (again)**
+   - **Source**: FastAPI Backend
+   - **Destination**: Metadata
+   - **Data Type**: Unknown
+   - **Purpose**: To potentially send additional metadata required for processing or contextualizing other requests or operations.
+
+8. **Flow from FastAPI Backend to Mode (again)**
+   - **Source**: FastAPI Backend
+   - **Destination**: Mode
+   - **Data Type**: Unknown
+   - **Purpose**: To set or communicate the current operational mode back into the system.
+
+9. **Flow from FastAPI Backend to Session ID**
+   - **Source**: FastAPI Backend
+   - **Destination**: Session ID
+   - **Data Type**: Unknown
+   - **Purpose**: To manage or reference a particular session, crucial for ongoing interactions in the system.
+
+10. **Flow from FastAPI Backend to Topic ID (again)**
+   - **Source**: FastAPI Backend
+   - **Destination**: Topic ID
+   - **Data Type**: Unknown
+   - **Purpose**: To send or retrieve information related to the current topic in focus.
 
 ### Mermaid Flowchart
 ```mermaid
