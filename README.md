@@ -78,6 +78,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     ```bash
     uvicorn fastapi_backend:app --reload
     ```
+    
 # Contributors 
 
 - Kyo Mangold (https://github.com/kyomangold)
