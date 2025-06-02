@@ -1,63 +1,36 @@
-# Information Flows Description
-
-## Flow Analysis
+## Information Flows in the Application
 
 1. **Flow from FastAPI Backend to Agents OpenAI**
-   - **Source**: FastAPI Backend
-   - **Destination**: Agents OpenAI
-   - **Data Type**: Unknown (implied request/response interaction)
-   - **Purpose**: To interact with OpenAI agents for processing and utilizing AI capabilities.
+   - **Source:** `fastapi_backend`
+   - **Destination:** `agents_openai`
+   - **Data Type:** Not specified
+   - **Purpose:** To interact with the OpenAI agents for processing or generating responses related to user requests.
 
-2. **Flow from Agent to Metadata**
-   - **Source**: Agent
-   - **Destination**: Metadata (External)
-   - **Data Type**: Unknown
-   - **Purpose**: To exchange or update metadata related to the agent's functioning.
+2. **Flow from Agent to External Sources (Metadata, Mode, Topic ID)**
+   - **Source:** `agent`
+   - **Destination:** `metadata`, `mode`, `topic_id`
+   - **Data Type:** Metadata (unknown specifics), Mode (unknown specifics), Topic ID (unknown specifics)
+   - **Purpose:** To provide necessary context and identification for the agent's operations. These data points are vital for external computations or decisions.
 
-3. **Flow from Agent to Mode**
-   - **Source**: Agent
-   - **Destination**: Mode (External)
-   - **Data Type**: Unknown
-   - **Purpose**: To convey or retrieve operational mode information for the agent.
+3. **Flow from FastAPI Backend to Various External APIs**
+   - **Source:** `fastapi_backend`
+   - **Destination:** multiple external APIs (e.g., `_api_connection_details`, `_api_create_topic`, `_api_current_session`, etc.)
+   - **Data Type:** Various endpoints related to user session and topics (unknown specifics for each)
+   - **Purpose:** To perform actions like creating topics, retrieving sessions, managing study materials, and fetching metrics related to study goals and progress.
 
-4. **Flow from Agent to Topic ID**
-   - **Source**: Agent
-   - **Destination**: Topic ID (External)
-   - **Data Type**: Unknown
-   - **Purpose**: To manage or reference specific topics the agent is addressing.
+4. **Flow from FastAPI Backend to Localhost**
+   - **Source:** `fastapi_backend`
+   - **Destination:** `http://localhost:3000`
+   - **Data Type:** HTTP requests (unknown specifics)
+   - **Purpose:** To communicate with services running on localhost, possibly for further processing or API integrations.
 
-5. **Flow from FastAPI Backend to Each API Endpoint (External)**
-   - **Source**: FastAPI Backend
-   - **Destination**: Various External APIs (e.g., `_api_connection_details`, `_api_create_topic`, etc.)
-   - **Data Type**: Unknown
-   - **Purpose**: To send requests or retrieve information through multiple endpoints for topic management, session handling, and study materials.
+5. **Flow from FastAPI Backend to External Various inputs (Lesson ID, Metadata, Mode, Session ID, Topic ID)**
+   - **Source:** `fastapi_backend`
+   - **Destination:** `lesson_id`, `metadata`, `mode`, `session_id`, `topic_id`
+   - **Data Type:** Lesson ID, Metadata (unknown specifics), Mode (unknown specifics), Session ID, Topic ID
+   - **Purpose:** To transmit relevant identifiers and data points for processing within the backend application logic.
 
-6. **Flow from FastAPI Backend to Http://localhost:3000**
-   - **Source**: FastAPI Backend
-   - **Destination**: Http://localhost:3000 (External)
-   - **Data Type**: Unknown (likely HTTP requests)
-   - **Purpose**: To interact with a local service or application that may provide additional functionalities or data.
-
-7. **Flow from FastAPI Backend to Lesson ID**
-   - **Source**: FastAPI Backend
-   - **Destination**: Lesson ID (External)
-   - **Data Type**: Unknown
-   - **Purpose**: To manage or reference lesson-specific information.
-
-8. **Flow from FastAPI Backend to Session ID**
-   - **Source**: FastAPI Backend
-   - **Destination**: Session ID (External)
-   - **Data Type**: Unknown
-   - **Purpose**: To manage or reference specific study sessions for tracking or control purposes.
-
-9. **Flow from FastAPI Backend to Topic ID (Repeated)**
-   - **Source**: FastAPI Backend
-   - **Destination**: Topic ID (External)
-   - **Data Type**: Unknown
-   - **Purpose**: To manage or reference topics, potentially indicated multiple times for emphasis on its importance.
-
-## Generated Mermaid Flowchart
-
+### Mermaid Flowchart
 ```mermaid
 flowchart TD
     fastapi_backend --> agents_openai
