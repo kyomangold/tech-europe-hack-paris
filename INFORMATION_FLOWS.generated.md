@@ -1,152 +1,62 @@
-Here is the analysis of the information flows within the application, based on the provided context and the Mermaid diagram.
+# Information Flows Description
 
-### Information Flows
+## Flow Analysis
 
-1. **Flow from `fastapi_backend` to `agents_openai`**
-   - **Source:** `fastapi_backend`
-   - **Destination:** `agents_openai`
-   - **Data Type:** Unknown (not specified in the context)
-   - **Purpose:** Interfacing with OpenAI agents
+1. **Flow from FastAPI Backend to Agents OpenAI**
+   - **Source**: FastAPI Backend
+   - **Destination**: Agents OpenAI
+   - **Data Type**: Unknown (implied request/response interaction)
+   - **Purpose**: To interact with OpenAI agents for processing and utilizing AI capabilities.
 
-2. **Flow from `agent` to external metadata**
-   - **Source:** `agent`
-   - **Destination:** external `metadata`
-   - **Data Type:** Metadata
-   - **Purpose:** Unknown (not specified in the context)
+2. **Flow from Agent to Metadata**
+   - **Source**: Agent
+   - **Destination**: Metadata (External)
+   - **Data Type**: Unknown
+   - **Purpose**: To exchange or update metadata related to the agent's functioning.
 
-3. **Flow from `agent` to external `mode`**
-   - **Source:** `agent`
-   - **Destination:** external `mode`
-   - **Data Type:** Mode information
-   - **Purpose:** Unknown (not specified in the context)
+3. **Flow from Agent to Mode**
+   - **Source**: Agent
+   - **Destination**: Mode (External)
+   - **Data Type**: Unknown
+   - **Purpose**: To convey or retrieve operational mode information for the agent.
 
-4. **Flow from `agent` to external `topic_id`**
-   - **Source:** `agent`
-   - **Destination:** external `topic_id`
-   - **Data Type:** Topic identifier
-   - **Purpose:** Unknown (not specified in the context)
+4. **Flow from Agent to Topic ID**
+   - **Source**: Agent
+   - **Destination**: Topic ID (External)
+   - **Data Type**: Unknown
+   - **Purpose**: To manage or reference specific topics the agent is addressing.
 
-5. **Flow from `fastapi_backend` to external `_api_connection_details`**
-   - **Source:** `fastapi_backend`
-   - **Destination:** external `_api_connection_details`
-   - **Data Type:** Connection details
-   - **Purpose:** Unknown (not specified in the context)
+5. **Flow from FastAPI Backend to Each API Endpoint (External)**
+   - **Source**: FastAPI Backend
+   - **Destination**: Various External APIs (e.g., `_api_connection_details`, `_api_create_topic`, etc.)
+   - **Data Type**: Unknown
+   - **Purpose**: To send requests or retrieve information through multiple endpoints for topic management, session handling, and study materials.
 
-6. **Flow from `fastapi_backend` to external `_api_create_topic`**
-   - **Source:** `fastapi_backend`
-   - **Destination:** external `_api_create_topic`
-   - **Data Type:** Topic creation data
-   - **Purpose:** Unknown (not specified in the context)
+6. **Flow from FastAPI Backend to Http://localhost:3000**
+   - **Source**: FastAPI Backend
+   - **Destination**: Http://localhost:3000 (External)
+   - **Data Type**: Unknown (likely HTTP requests)
+   - **Purpose**: To interact with a local service or application that may provide additional functionalities or data.
 
-7. **Flow from `fastapi_backend` to external `_api_current_session`**
-   - **Source:** `fastapi_backend`
-   - **Destination:** external `_api_current_session`
-   - **Data Type:** Current session data
-   - **Purpose:** Unknown (not specified in the context)
+7. **Flow from FastAPI Backend to Lesson ID**
+   - **Source**: FastAPI Backend
+   - **Destination**: Lesson ID (External)
+   - **Data Type**: Unknown
+   - **Purpose**: To manage or reference lesson-specific information.
 
-8. **Flow from `fastapi_backend` to external `_api_current_topic`**
-   - **Source:** `fastapi_backend`
-   - **Destination:** external `_api_current_topic`
-   - **Data Type:** Current topic data
-   - **Purpose:** Unknown (not specified in the context)
+8. **Flow from FastAPI Backend to Session ID**
+   - **Source**: FastAPI Backend
+   - **Destination**: Session ID (External)
+   - **Data Type**: Unknown
+   - **Purpose**: To manage or reference specific study sessions for tracking or control purposes.
 
-9. **Flow from `fastapi_backend` to external `_api_give_more_info`**
-   - **Source:** `fastapi_backend`
-   - **Destination:** external `_api_give_more_info`
-   - **Data Type:** Information providing data
-   - **Purpose:** Unknown (not specified in the context)
+9. **Flow from FastAPI Backend to Topic ID (Repeated)**
+   - **Source**: FastAPI Backend
+   - **Destination**: Topic ID (External)
+   - **Data Type**: Unknown
+   - **Purpose**: To manage or reference topics, potentially indicated multiple times for emphasis on its importance.
 
-10. **Flow from `fastapi_backend` to external `_api_improvement_areas`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_improvement_areas`
-    - **Data Type:** Improvement areas data
-    - **Purpose:** Unknown (not specified in the context)
-
-11. **Flow from `fastapi_backend` to external `_api_next_up_topics`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_next_up_topics`
-    - **Data Type:** Next topics data
-    - **Purpose:** Unknown (not specified in the context)
-
-12. **Flow from `fastapi_backend` to external `_api_study_goals`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_study_goals`
-    - **Data Type:** Study goals data
-    - **Purpose:** Unknown (not specified in the context)
-
-13. **Flow from `fastapi_backend` to external `_api_study_metrics`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_study_metrics`
-    - **Data Type:** Study metrics data
-    - **Purpose:** Unknown (not specified in the context)
-
-14. **Flow from `fastapi_backend` to external `_api_study_planner`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_study_planner`
-    - **Data Type:** Study planner data
-    - **Purpose:** Unknown (not specified in the context)
-
-15. **Flow from `fastapi_backend` to external `_api_study_sessions`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_study_sessions`
-    - **Data Type:** Study session data
-    - **Purpose:** Unknown (not specified in the context)
-
-16. **Flow from `fastapi_backend` to external `_api_topic_progress`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_topic_progress`
-    - **Data Type:** Topic progress data
-    - **Purpose:** Unknown (not specified in the context)
-
-17. **Flow from `fastapi_backend` to external `_api_topics`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_topics`
-    - **Data Type:** Topics data
-    - **Purpose:** Unknown (not specified in the context)
-
-18. **Flow from `fastapi_backend` to external `_api_upload_study_material`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `_api_upload_study_material`
-    - **Data Type:** Study material data
-    - **Purpose:** Unknown (not specified in the context)
-
-19. **Flow from `fastapi_backend` to external `http___localhost_3000`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `http___localhost_3000`
-    - **Data Type:** HTTP request data
-    - **Purpose:** Unknown (not specified in the context)
-
-20. **Flow from `fastapi_backend` to external `lesson_id`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `lesson_id`
-    - **Data Type:** Lesson identifier
-    - **Purpose:** Unknown (not specified in the context)
-
-21. **Flow from `fastapi_backend` to external `metadata`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `metadata`
-    - **Data Type:** Metadata
-    - **Purpose:** Unknown (not specified in the context)
-
-22. **Flow from `fastapi_backend` to external `mode`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `mode`
-    - **Data Type:** Mode information
-    - **Purpose:** Unknown (not specified in the context)
-
-23. **Flow from `fastapi_backend` to external `session_id`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `session_id`
-    - **Data Type:** Session identifier
-    - **Purpose:** Unknown (not specified in the context)
-
-24. **Flow from `fastapi_backend` to external `topic_id`**
-    - **Source:** `fastapi_backend`
-    - **Destination:** external `topic_id`
-    - **Data Type:** Topic identifier
-    - **Purpose:** Unknown (not specified in the context)
-
-### Mermaid Flowchart
+## Generated Mermaid Flowchart
 
 ```mermaid
 flowchart TD
