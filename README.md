@@ -8,7 +8,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
 ## Project Structure
 
 ### Backend
-- `agent.py`: Main LiveKit agent implementation
+- `agent.py`: Main LiveKit agent implementation with Beyond Presence
 - `requirements.txt`: Python dependencies
 
 ### Frontend
