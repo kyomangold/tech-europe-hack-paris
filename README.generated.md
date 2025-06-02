@@ -1,42 +1,20 @@
-# Repository Title
+# README
 
 ## Overview
 
-This repository provides a simple interface for returning context chunks from a retrieval-augmented generation (RAG) system using a pgvector search. It is designed to facilitate the integration of large language models with external data sources through efficient vector similarity searches.
+This repository provides functionality to return RAG (Retrieval-Augmented Generation) context chunks via a pgvector search. The purpose of this code is to facilitate the searching and retrieval of contextually relevant information.
 
 ## Key Modules
 
-### Functions
-
-- **rag**: This function retrieves context chunks relevant to a given query using a pgvector search. It's the main function to access the RAG capabilities of the repository.
+- **functions**: 
+  - **rag**: This function implements the retrieval of context chunks using pgvector, enabling effective searching across the dataset.
 
 ## Installation Instructions
 
-To install the necessary dependencies and set up the environment, please refer to the specific requirements and installation steps provided in your environment setup, as the details are not explicitly defined in the codebase.
+No specific installation instructions are provided in the codebase. Make sure to have the necessary environment to run the code, including any dependencies required for pgvector functionality.
 
 ## Quick Start
 
-To get started with the RAG functionality:
+Currently, the only discoverable functionality is the `rag` function, which can be invoked to retrieve context chunks. Usage examples are not provided, so further insights into its implementation or other functionalities may be necessary to understand how to effectively use the repository. 
 
-1. **Initialize the RAG**: Call the `rag` function to begin fetching context chunks.
-2. **Provide Input**: Ensure you have appropriate input parameters to pass to the function.
-
-Example usage (specific input parameters are not provided, so this is a placeholder):
-
-```javascript
-const contextChunks = rag();
-```
-
-Further usage examples may require more context or configuration according to your application needs.
-
-## Contributing
-
-To contribute to this repository, please follow the guidelines laid out in your contributing document, as specific contributions methods are not defined in the codebase.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details. 
-
-## Acknowledgments
-
-The idea behind this project is built upon combining modern NLP techniques with vector search, inspired by advancements in retrieval-augmented generation strategies.
+Please consult the source code for additional details on how to utilize the `rag` function properly.
