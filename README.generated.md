@@ -8,38 +8,39 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
 
 ### Backend
 - `agent.py`: Main LiveKit agent implementation with Beyond Presence
+- `fastapi_backend.py`: Main backend implementation to connect everything to the frontend
+- `agents_openai.py`: OpenAI agent implementation
 - `requirements.txt`: Python dependencies
 
 ### Frontend
 - Next.js application with TypeScript and Tailwind CSS
-- Components:
-  - `NoAgentNotification.tsx`: UI for when no agent is available
-  - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility
-  - `CloseIcon.tsx`: UI component for closing modals
-- App Structure:
-  - `app/page.tsx`: Main application page
-  - `app/layout.tsx`: Root layout component
-  - `app/api/`: API routes
-  - `hooks/`: Custom React hooks
+  - **Components:**
+    - `NoAgentNotification.tsx`: UI for when no agent is available
+    - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility
+    - `CloseIcon.tsx`: UI component for closing modals
+  - **App Structure:**
+    - `app/page.tsx`: Main application page
+    - `app/layout.tsx`: Root layout component
+    - `app/api/`: API routes
+    - `hooks/`: Custom React hooks
 
 ## Features
-- Real-time voice-based interactions with AI
-- Feynman technique for enhanced learning
-- Integration with OpenAI Agents API for accessing additional knowledge
-- UI components for improved user experience
-- Accessibility features like real-time transcription
+- Real-time voice interactions
+- AI feedback using Feynman technique
+- Ability to search web and retrieve data from PDFs
+- Custom React hooks for frontend interactions
 
 ## Technology Stack
-- Frontend: Next.js, TypeScript, Tailwind CSS
-- Backend: Python, LiveKit, Beyond Presence
-- Dependencies: 
+- **Frontend:** Next.js, TypeScript, Tailwind CSS
+- **Backend:** Python, FastAPI, LiveKit, OpenAI API
+- **Dependencies:**
   - `livekit==1.0.8`
   - `python-dotenv==1.1.0`
 
 ## Prerequisites
 - Python 3.x
-- Node.js (for frontend)
-- npm (for package management)
+- Node.js and npm
+- Python virtual environment
 
 ## Installation
 
@@ -47,7 +48,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
 1. Create and activate a Python virtual environment:
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows: venv\\Scripts\\activate
+    source venv/bin/activate  # On Windows: venv\Scripts\activate
     ```
 
 2. Install Python dependencies:
@@ -56,8 +57,8 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     pip install livekit-plugins-bey
     ```
 
-3. Create a `.env` file in the root directory:
-    ```ini
+3. Create `.env` file in the root directory:
+    ```plaintext
     # OpenAI API  
     OPENAI_API_KEY=sk-...
 
@@ -71,7 +72,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     BEY_AVATAR_ID=...
     ```
 
-4. Run the beyond presence avatar backend:
+4. Run the Beyond Presence avatar backend:
     ```bash
     python agent.py dev
     ```
@@ -97,35 +98,24 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     uvicorn fastapi_backend:app --reload
     ```
 
-## Configuration
-Specific configuration options are primarily stored in the `.env` file created during setup. These configurations include API keys for external services.
-
-## Running the Application
-- Use the provided commands above to run both the backend and frontend in development mode.
-
-## API Documentation
-Not found in codebase.
-
-## Project Structure
-- The project is organized into backend and frontend directories as described above.
-
 ## Testing
-No testing framework or test files were found in the codebase.
+Information not found in codebase
 
 ## Deployment
-No specific deployment instructions are found in the codebase.
+Information not found in codebase
 
 ## Contributing
-Contributions are welcome! Please refer to [Kyo Mangold](https://github.com/kyomangold) or [Daniel Gisler](https://github.com/gislerda) for any contributions or collaboration.
+Contributors:
+- Kyo Mangold (https://github.com/kyomangold)
+- Daniel Gisler (https://github.com/gislerda)
 
 ## License
-Not found in codebase.
+Not found in codebase
 
 ---
 
-Suggestions for Additional Sections:
-- API Documentation: Define the endpoints and their usage.
-- Testing Instructions: Provide details if tests are to be added in the future.
-- License Information: Add license details for clarity.
-
-Feel free to enhance this README further with contributions from team members!
+### Suggestions for Improvement:
+- Include detailed API documentation for the backend endpoints.
+- Add a section on testing and examples of running tests.
+- Clarify the deployment process, especially if there are Docker configurations.
+- Consider providing a LICENSE file for clarity on the project's licensing.
