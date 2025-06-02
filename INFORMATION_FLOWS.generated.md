@@ -1,81 +1,48 @@
-The following information flows have been detected in the application based on the provided Mermaid diagram:
+## Information Flows
 
-1. **Flow from `fastapi_backend` to `agents_openai`**
-   - **Source**: `fastapi_backend`
-   - **Destination**: `agents_openai`
-   - **Data Type**: Unknown (typically would involve requests such as user input or commands)
-   - **Purpose**: To send information for processing or querying by agents from OpenAI.
+### 1. Flow from `fastapi_backend` to `agents_openai`
+- **Source**: `fastapi_backend`
+- **Destination**: `agents_openai`
+- **Data Type**: Data related to agents
+- **Purpose**: The `fastapi_backend` sends data to `agents_openai`, likely to utilize AI functionalities or services for handling requests.
 
-2. **Flow from `agent` to `metadata` (external)**
-   - **Source**: `agent`
-   - **Destination**: `metadata`
-   - **Data Type**: External metadata
-   - **Purpose**: To fetch or store metadata relevant to the operation or scenario being handled by the agent.
+### 2. Flow from `agent` to `metadata`
+- **Source**: `agent`
+- **Destination**: `metadata`
+- **Data Type**: Metadata information
+- **Purpose**: The `agent` retrieves metadata, which may contain supplementary information necessary for its operation or decision making.
 
-3. **Flow from `agent` to `mode` (external)**
-   - **Source**: `agent`
-   - **Destination**: `mode`
-   - **Data Type**: External mode
-   - **Purpose**: To retrieve or determine the operational mode required by the agent for processing.
+### 3. Flow from `agent` to `mode`
+- **Source**: `agent`
+- **Destination**: `mode`
+- **Data Type**: Mode settings or configurations
+- **Purpose**: The `agent` interacts with mode settings, probably to adjust its operating parameters.
 
-4. **Flow from `agent` to `topic_id` (external)**
-   - **Source**: `agent`
-   - **Destination**: `topic_id`
-   - **Data Type**: External topic identifier
-   - **Purpose**: To access or utilize a specific topic identified by the agent.
+### 4. Flow from `agent` to `topic_id`
+- **Source**: `agent`
+- **Destination**: `topic_id`
+- **Data Type**: Identifier for a specific topic
+- **Purpose**: The `agent` accesses the `topic_id`, which may be used for contextual or thematic processing.
 
-5. **Multiple Flows from `fastapi_backend` to various external APIs:**
-   - **Data Type**: External API connections
-   - **API References**: 
-     - `_api_connection_details`
-     - `_api_create_topic`
-     - `_api_current_session`
-     - `_api_current_topic`
-     - `_api_give_more_info`
-     - `_api_improvement_areas`
-     - `_api_next_up_topics`
-     - `_api_study_goals`
-     - `_api_study_metrics`
-     - `_api_study_planner`
-     - `_api_study_sessions`
-     - `_api_topic_progress`
-     - `_api_topics`
-     - `_api_upload_study_material`
-     - `http___localhost_3000`
-   - **Purpose**: To make various API calls for creating topics, accessing study materials, session data, etc.
+### 5. Flow from `fastapi_backend` to various API endpoints (external systems)
+- **Source**: `fastapi_backend`
+- **Destination**: Several API endpoints (e.g., `_api_connection_details`, `_api_create_topic`, etc.)
+- **Data Type**: Various types including connection details, session information, and study materials.
+- **Purpose**: To interface with external APIs for functionalities such as creating topics, managing sessions, and accessing study metrics.
 
-6. **Flow from `fastapi_backend` to `lesson_id` (external)**
-   - **Source**: `fastapi_backend`
-   - **Destination**: `lesson_id`
-   - **Data Type**: External lesson identifier
-   - **Purpose**: To utilize specific lesson data, possibly for study or instructional purposes.
+### 6. Flow from `fastapi_backend` to `http___localhost_3000`
+- **Source**: `fastapi_backend`
+- **Destination**: `http___localhost_3000`
+- **Data Type**: HTTP requests/responses
+- **Purpose**: To communicate with another service or component running locally, possibly for retrieving or sending data.
 
-7. **Flow from `fastapi_backend` to `metadata` (external)**
-   - **Source**: `fastapi_backend`
-   - **Destination**: `metadata`
-   - **Data Type**: External metadata
-   - **Purpose**: To fetch or update relevant metadata as needed within the application's flow.
+### 7. Flows involving `lesson_id`, `session_id`, and `topic_id`
+- **Source**: `fastapi_backend`
+- **Destination**: Various identifiers (e.g., `lesson_id`, `session_id`, `topic_id`)
+- **Data Type**: Identifier values 
+- **Purpose**: These identifiers are likely used for tracking and managing user sessions or learning topics in the application.
 
-8. **Flow from `fastapi_backend` to `mode` (external)**
-   - **Source**: `fastapi_backend`
-   - **Destination**: `mode`
-   - **Data Type**: External mode
-   - **Purpose**: To determine or change the mode of operation for the backend system.
-
-9. **Flow from `fastapi_backend` to `session_id` (external)**
-   - **Source**: `fastapi_backend`
-   - **Destination**: `session_id`
-   - **Data Type**: External session identifier
-   - **Purpose**: To manage and track user sessions.
-
-10. **Flow from `fastapi_backend` to `topic_id` (external)**
-    - **Source**: `fastapi_backend`
-    - **Destination**: `topic_id`
-    - **Data Type**: External topic identifier
-    - **Purpose**: To reference or interact with specific topics as required.
-
-Here is the exact Mermaid flowchart that represents the information flows analyzed:
-
+### Flowchart Representation
 ```mermaid
 flowchart TD
     fastapi_backend --> agents_openai
