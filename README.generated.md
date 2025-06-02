@@ -1,54 +1,50 @@
 # Best-In-Class – AI Tutor
 
-An AI-powered tutor that helps students master any subject using the Feynman technique—learn by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words; the AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode," the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, and more).
+An AI-powered tutor that helps students master any subject using the Feynman technique - learn by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words; the AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode," the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, and more).
 
 ![Best-In-Class AI Tutor Screenshot](./best_in_class_ai_feynman.png)
 
 ## Project Structure
 
 ### Backend
-- `agent.py`: Main LiveKit agent implementation with Beyond Presence.
-- `requirements.txt`: Python dependencies.
+- `agent.py`: Main LiveKit agent implementation with Beyond Presence
+- `requirements.txt`: Python dependencies
 
 ### Frontend
-- Next.js application with TypeScript and Tailwind CSS.
-- **Components**:
-  - `NoAgentNotification.tsx`: UI for when no agent is available.
-  - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility.
-  - `CloseIcon.tsx`: UI component for closing modals.
-- **App Structure**:
-  - `app/page.tsx`: Main application page.
-  - `app/layout.tsx`: Root layout component.
-  - `app/api/`: API routes.
-  - `hooks/`: Custom React hooks.
+- Next.js application with TypeScript and Tailwind CSS
+- Components:
+  - `NoAgentNotification.tsx`: UI for when no agent is available
+  - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility
+  - `CloseIcon.tsx`: UI component for closing modals
+- App Structure:
+  - `app/page.tsx`: Main application page
+  - `app/layout.tsx`: Root layout component
+  - `app/api/`: API routes
+  - `hooks/`: Custom React hooks
 
 ## Features
-- Real-time voice-based interactions.
-- Interactive learning using the Feynman technique.
-- Support for teacher and student modes, enhancing the learning experience.
-- Integration with OpenAI Agents API for extended search capabilities.
+- Real-time voice-based interactions
+- AI feedback on student explanations
+- Teacher Mode for searching and retrieving information
 
 ## Technology Stack
-- Python (Backend)
-- Next.js (Frontend)
-- TypeScript
-- Tailwind CSS
-- LiveKit
-- Beyond Presence
+- **Frontend**: Next.js, TypeScript, Tailwind CSS
+- **Backend**: Python
+- **Dependencies**:
+  - LiveKit: `livekit==1.0.8`
+  - Dotenv for environment variable management: `python-dotenv==1.1.0`
 
 ## Prerequisites
-- Python 3.6 or higher
-- Node.js and npm installed
-- Access to OpenAI API with a valid API key
-- LiveKit credentials
+- Python 3.x
+- Node.js and npm
+- Knowledge of Next.js and Python development
 
 ## Installation
-
 ### Backend Setup
 1. Create and activate a Python virtual environment:
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    source venv/bin/activate  # On Windows: venv\\Scripts\\activate
     ```
 
 2. Install Python dependencies:
@@ -57,16 +53,16 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     pip install livekit-plugins-bey
     ```
 
-3. Create a `.env` file in the root directory with the following content:
-    ```env
+3. Create `.env` file in the root directory:
+    ```plaintext
     # OpenAI API  
     OPENAI_API_KEY=sk-...
-    
+
     # Livekit API  
     LIVEKIT_URL=...
     LIVEKIT_API_KEY=...
     LIVEKIT_API_SECRET=...
-    
+
     # Beyond Presence API
     BEY_API_KEY=sk-...
     BEY_AVATAR_ID=...
@@ -99,29 +95,35 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     ```
 
 ## Configuration
-- A sample `.env` file is provided as `.env.example` in the root directory. Customize this file with your actual API keys and settings.
+Information not found in codebase.
 
 ## Running the Application
-- The application consists of a backend running on FastAPI and a frontend on Next.js. Follow the setup steps for both backend and frontend to run the application in development mode.
+- Use the above installation instructions to run the development server for both frontend and backend.
 
 ## API Documentation
-- No API documentation was found in the codebase. It is suggested to implement an API documentation tool or provide examples for the API endpoints utilized.
+Information not found in codebase.
 
 ## Project Structure
-- The overall project contains both backend and frontend components, as detailed in the "Project Structure" section.
+- The project consists of a well-organized directory structure with separated backend and frontend directories as outlined above.
 
 ## Testing
-- There are no test files or frameworks found in the codebase. It is suggested to implement testing for both the frontend and backend to ensure code quality.
+No test cases found in the codebase.
 
 ## Deployment
-- Not found in codebase. It is recommended to include Docker configurations or deployment instructions.
+Not found in codebase.
 
 ## Contributing
-- Not found in codebase. It is suggested to include a `CONTRIBUTING.md` file to guide potential contributors.
+Contributions are welcome. Please refer to the following contributors:
+- Kyo Mangold (https://github.com/kyomangold)
+- Daniel Gisler (https://github.com/gislerda)
 
 ## License
-- Not found in codebase. It is suggested to include a `LICENSE` file to specify the project's licensing terms.
+Not found in codebase.
 
 ---
 
-This README has been enhanced and updated based on the existing content and codebase structure. For further enhancements, consider adding examples, tests, deployment instructions, and a license.
+### Suggested Improvements:
+- Include configuration details for specific environment settings.
+- Add API documentation for the backend once its structure is defined.
+- Provide deployment instructions especially if Docker or CI/CD is used.
+- Create and include tests to enhance project reliability.
