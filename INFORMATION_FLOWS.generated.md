@@ -1,108 +1,36 @@
-## Information Flows Description
-
-The following information flows have been identified in the application, detailing the source, destination, data type, and purpose of each flow:
+Based on the provided Mermaid diagram and analysis, the following information flows exist within the application:
 
 1. **Flow from `fastapi_backend` to `agents_openai`**
-   - **Source**: `fastapi_backend`
-   - **Destination**: `agents_openai`
-   - **Data Type**: Unknown (assumed to be request or processed input)
-   - **Purpose**: To communicate with the OpenAI agents for processing requests.
+   - **Source:** `fastapi_backend`
+   - **Destination:** `agents_openai`
+   - **Data Type:** Unknown (Inferred to be requests or commands)
+   - **Purpose:** To utilize the capabilities of the OpenAI agents for processing or responding to requests.
 
-2. **Flows from `agent` to external data sources**
-   - **Source**: `agent`
-   - **Destination**: `metadata` (external)
-     - **Data Type**: Metadata
-     - **Purpose**: To retrieve or send metadata information related to processing.
-   - **Source**: `agent`
-   - **Destination**: `mode` (external)
-     - **Data Type**: Mode settings
-     - **Purpose**: To configure operational modes for the agent.
-   - **Source**: `agent`
-   - **Destination**: `topic_id` (external)
-     - **Data Type**: Topic Identifier
-     - **Purpose**: To specify which topic the agent is currently addressing.
+2. **Flow from `agent` to external systems (multiple)**
+   - **Source:** `agent`
+   - **Destination:** Various external systems (e.g., `metadata`, `mode`, `topic_id`)
+   - **Data Type:** Unknown (Inferred to be parameters, configurations, or state information)
+   - **Purpose:** To provide context or parameters needed for processing within the agents.
 
-3. **Flows from `fastapi_backend` to various external APIs**
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_connection_details` (external)
-     - **Data Type**: API connection details
-     - **Purpose**: To retrieve or manage connection settings with external services.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_create_topic` (external)
-     - **Data Type**: Topic creation request
-     - **Purpose**: To create a new topic within the external system.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_current_session` (external)
-     - **Data Type**: Current session data
-     - **Purpose**: To get information about the current study session.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_current_topic` (external)
-     - **Data Type**: Current topic data
-     - **Purpose**: To fetch details of the active topic.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_give_more_info` (external)
-     - **Data Type**: Request for additional information
-     - **Purpose**: To request further details on a specific subject.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_improvement_areas` (external)
-     - **Data Type**: Improvement area data
-     - **Purpose**: To identify areas for potential study enhancements.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_next_up_topics` (external)
-     - **Data Type**: Upcoming topics
-     - **Purpose**: To obtain information on topics that will be addressed next.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_study_goals` (external)
-     - **Data Type**: Study goals
-     - **Purpose**: To set or retrieve goals for the study program.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_study_metrics` (external)
-     - **Data Type**: Study metrics
-     - **Purpose**: To fetch performance metrics for the study sessions.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_study_planner` (external)
-     - **Data Type**: Study planner data
-     - **Purpose**: To manage or plan study activities.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_study_sessions` (external)
-     - **Data Type**: Study session data
-     - **Purpose**: To retrieve information about scheduled study sessions.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_topic_progress` (external)
-     - **Data Type**: Topic progress data
-     - **Purpose**: To track progress regarding a specific topic.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_topics` (external)
-     - **Data Type**: Topics data
-     - **Purpose**: To get a list of topics being studied.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `_api_upload_study_material` (external)
-     - **Data Type**: Study materials
-     - **Purpose**: To upload study materials to the external system.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `http___localhost_3000` (external)
-     - **Data Type**: HTTP request
-     - **Purpose**: To interact with a local development server for resource access.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `lesson_id` (external)
-     - **Data Type**: Lesson Identifier
-     - **Purpose**: To specify the lesson being referred to.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `metadata` (external)
-     - **Data Type**: Metadata
-     - **Purpose**: To manage metadata related to ongoing operations.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `mode` (external)
-     - **Data Type**: Mode settings
-     - **Purpose**: To configure or reflect operational modes.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `session_id` (external)
-     - **Data Type**: Session Identifier
-     - **Purpose**: To specify which session is being interacted with.
-   - **Source**: `fastapi_backend`
-   - **Destination**: `topic_id` (external)
-     - **Data Type**: Topic Identifier
-     - **Purpose**: To tie operations to a specific topic.
+3. **Flow from `fastapi_backend` to various external APIs (multiple)**
+   - **Source:** `fastapi_backend`
+   - **Destination:** Various external API endpoints (e.g., `_api_connection_details`, `_api_create_topic`, etc.)
+   - **Data Type:** Unknown (Inferred to be API requests carrying relevant parameters)
+   - **Purpose:** To interact with different functionalities and retrieve or send data related to study goals, session management, and topic progress, among others.
+
+4. **Flow from `fastapi_backend` to `http___localhost_3000`**
+   - **Source:** `fastapi_backend`
+   - **Destination:** `http___localhost_3000`
+   - **Data Type:** Unknown (Inferred to be HTTP requests)
+   - **Purpose:** To communicate with a local service running on port 3000, possibly for additional functionality or data access.
+
+5. **Flow from `fastapi_backend` to additional external parameters (multiple)**
+   - **Source:** `fastapi_backend`
+   - **Destination:** Various external parameters (e.g., `lesson_id`, `metadata`, `session_id`, etc.)
+   - **Data Type:** Unknown (Inferred to be identifiers or configurations)
+   - **Purpose:** To provide context or operational data needed for handling user sessions or lesson specifics.
+
+The exact Mermaid flowchart generated from the code analysis is as follows:
 
 ```mermaid
 flowchart TD
