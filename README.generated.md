@@ -7,33 +7,39 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
 ## Project Structure
 
 ### Backend
-- **`agent.py`**: Main LiveKit agent implementation with Beyond Presence
-- **`requirements.txt`**: Python dependencies
+- `agent.py`: Main LiveKit agent implementation with Beyond Presence
+- `requirements.txt`: Python dependencies
 
 ### Frontend
 - Next.js application with TypeScript and Tailwind CSS
-- **Components**:
-  - **`NoAgentNotification.tsx`**: UI for when no agent is available
-  - **`TranscriptionView.tsx`**: Real-time transcription display for improved accessibility
-  - **`CloseIcon.tsx`**: UI component for closing modals
-- **App Structure**:
-  - **`app/page.tsx`**: Main application page
-  - **`app/layout.tsx`**: Root layout component
-  - **`app/api/`**: API routes
-  - **`hooks/`**: Custom React hooks
+- Components:
+  - `NoAgentNotification.tsx`: UI for when no agent is available
+  - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility
+  - `CloseIcon.tsx`: UI component for closing modals
+- App Structure:
+  - `app/page.tsx`: Main application page
+  - `app/layout.tsx`: Root layout component
+  - `app/api/`: API routes
+  - `hooks/`: Custom React hooks
 
 ## Features
-- AI-powered tutoring using voice-based interactions.
-- Real-time transcriptions for accessibility.
-- Integration with OpenAI for searching additional resources.
+- Real-time voice-based interactions with AI
+- Feynman technique for enhanced learning
+- Integration with OpenAI Agents API for accessing additional knowledge
+- UI components for improved user experience
+- Accessibility features like real-time transcription
 
 ## Technology Stack
-- **Backend**: Python, LiveKit
-- **Frontend**: Next.js, TypeScript, Tailwind CSS
+- Frontend: Next.js, TypeScript, Tailwind CSS
+- Backend: Python, LiveKit, Beyond Presence
+- Dependencies: 
+  - `livekit==1.0.8`
+  - `python-dotenv==1.1.0`
 
 ## Prerequisites
 - Python 3.x
-- Node.js and npm
+- Node.js (for frontend)
+- npm (for package management)
 
 ## Installation
 
@@ -50,8 +56,8 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     pip install livekit-plugins-bey
     ```
 
-3. Create `.env` file in the root directory:
-    ```plaintext
+3. Create a `.env` file in the root directory:
+    ```ini
     # OpenAI API  
     OPENAI_API_KEY=sk-...
 
@@ -91,25 +97,35 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     uvicorn fastapi_backend:app --reload
     ```
 
+## Configuration
+Specific configuration options are primarily stored in the `.env` file created during setup. These configurations include API keys for external services.
+
 ## Running the Application
-The application can be run in development mode using the commands provided in the installation section. Be sure to start both the Python backend and the Next.js frontend.
+- Use the provided commands above to run both the backend and frontend in development mode.
 
 ## API Documentation
-**Information not found in codebase.** Consider adding documentation for the API endpoints if available.
+Not found in codebase.
+
+## Project Structure
+- The project is organized into backend and frontend directories as described above.
 
 ## Testing
-**Information not found in codebase.** No tests were found, and no testing framework is defined. You may want to create tests for the application to ensure reliability.
+No testing framework or test files were found in the codebase.
 
 ## Deployment
-**Information not found in codebase.** No deployment instructions were found. Consider adding information about how to deploy the application once it's ready.
+No specific deployment instructions are found in the codebase.
 
 ## Contributing
-- **Kyo Mangold** (https://github.com/kyomangold)
-- **Daniel Gisler** (https://github.com/gislerda)
+Contributions are welcome! Please refer to [Kyo Mangold](https://github.com/kyomangold) or [Daniel Gisler](https://github.com/gislerda) for any contributions or collaboration.
 
 ## License
-**Information not found in codebase.** Consider adding a LICENSE file to specify the licensing of the project.
+Not found in codebase.
 
 ---
 
-This README provides a comprehensive overview of the project based on the existing codebase. Several sections, such as API documentation and testing, need to be further developed to enhance the documentation quality.
+Suggestions for Additional Sections:
+- API Documentation: Define the endpoints and their usage.
+- Testing Instructions: Provide details if tests are to be added in the future.
+- License Information: Add license details for clarity.
+
+Feel free to enhance this README further with contributions from team members!
