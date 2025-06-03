@@ -1,6 +1,6 @@
 # Best-In-Class – AI Tutor
 
-An AI-powered tutor that helps students master any subject using the Feynman technique - learning by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words; the AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode," the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, notes, and more).
+An AI-powered tutor that helps students master any subject using the Feynman technique - learning by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words. The AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode," the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, notes, and more).
 
 ![Best-In-Class - AI Tutor Screenshot](./best_in_class_ai_feynman.png)
 
@@ -25,26 +25,27 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
   - `hooks/`: Custom React hooks
 
 ## Features
-- Real-time voice-based interactions through LiveKit
-- Feynman technique enabling students to learn by teaching
-- AI guidance and feedback based on student explanations
-- Integration with OpenAI Agents API for enhanced information retrieval
+- AI-powered tutoring using the Feynman technique
+- Real-time voice-based interactions
+- Feedback and targeted questioning from the AI
+- Teacher Mode to search the web and retrieve information
+- Accessibility features via live transcription
 
 ## Technology Stack
-- Python (Backend)
+- Python
 - FastAPI
-- Next.js (Frontend)
-- TypeScript
-- Tailwind CSS
 - LiveKit
 - Beyond Presence
+- Next.js
+- TypeScript
+- Tailwind CSS
 
 ## Prerequisites
 - Python 3.x
-- Node.js and npm
+- Node.js (for frontend)
+- npm or yarn (for managing frontend packages)
 
 ## Installation
-
 ### Backend Setup
 1. Create and activate a Python virtual environment:
     ```bash
@@ -58,8 +59,8 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     pip install livekit-plugins-bey
     ```
 
-3. Create a `.env` file in the root directory with the following content:
-    ```env
+3. Create `.env` file in the root directory:
+    ```plaintext
     # OpenAI API  
     OPENAI_API_KEY=sk-...
 
@@ -73,7 +74,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     BEY_AVATAR_ID=...
     ```
 
-4. Run the Beyond Presence avatar backend:
+4. Run the beyond presence avatar backend:
     ```bash
     python agent.py dev
     ```
@@ -99,19 +100,39 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     uvicorn fastapi_backend:app --reload
     ```
 
+## Configuration
+### Environment Variables
+- Ensure the `.env` file contains the necessary keys mentioned in the "Installation" section.
+
+## Running the Application
+- For the backend, use:
+    ```bash
+    python agent.py dev
+    ```
+- For the frontend, start the development server as mentioned in the "Installation" section.
+
+## API Documentation
+*Information not found in codebase*
+
+## Project Structure
+- The project has a clear directory structure as mentioned in the Project Structure section.
+
 ## Testing
-No testing framework or test commands are found in the codebase.
+*Information not found in codebase*
 
 ## Deployment
-Not found in the codebase.
+*Information not found in codebase*
 
 ## Contributing
+Contributions are welcome. Please check the guidelines in the repository.
+
+## Contributors 
 - Kyo Mangold (https://github.com/kyomangold)
 - Daniel Gisler (https://github.com/gislerda)
 
 ## License
-Not found in the codebase.
+*Information not found in codebase*
 
 ---
 
-This README provides a comprehensive overview of the project. However, additional information such as test commands, deployment instructions, and license details should be added to enhance clarity for contributors and users.
+For sections where information was not found in the codebase (like API Documentation, Testing, Deployment, and License), it is recommended to add relevant details to enhance the README further.
