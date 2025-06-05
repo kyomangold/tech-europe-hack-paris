@@ -1,8 +1,8 @@
 # Architecture Overview
-The system architecture consists of a FastAPI backend that interacts with OpenAI agents to provide various functionalities related to study management. The architecture supports a modular design where different components communicate over defined APIs, facilitating data exchange and enhancing maintainability.
+
+The system is designed as a backend service utilizing FastAPI, which serves as the primary framework for handling API requests. It interacts with various agents, likely for generating responses or enhancing user interaction, and manages external data connections related to studies and topics. The architecture emphasizes modularity by allowing flexible interaction with different data endpoints and services.
 
 ## System Architecture Diagram
-Below is the generated architecture diagram that illustrates the interactions between the main components of the system.
 
 ```mermaid
 flowchart TD
@@ -32,55 +32,57 @@ flowchart TD
     fastapi_backend -.->|external| topic_id
 ```
 
-### Diagram Components:
-- **FastAPI Backend**: The core server that handles requests and responses, processes the business logic, and communicates with the OpenAI agents.
-- **Agents OpenAI**: External agents that handle complex interactions and respond to queries based on study materials and user data.
-- **API Endpoints**: Various endpoints for creating topics, managing sessions, uploading study materials, and retrieving progress, which are signified by the dashed lines and associated labels. 
+### Diagram Explanation:
+- **fastapi_backend**: The central component that manages requests and responses.
+- **agents_openai**: External agent service likely used for processing or generating intelligent responses.
+- **metadata, mode, topic_id, lesson_id, session_id**: Various data points representing external entities that the backend may rely upon for processing requests.
+- **API Endpoints**:
+  - _api_create_topic
+  - _api_current_session
+  - _api_current_topic
+  - _api_give_more_info
+  - _api_improvement_areas
+  - _api_next_up_topics
+  - _api_study_goals
+  - _api_study_metrics
+  - _api_study_planner
+  - _api_study_sessions
+  - _api_topic_progress
+  - _api_topics
+  - _api_upload_study_material
+These endpoints facilitate various functionalities such as creating topics, managing study sessions, and uploading materials.
 
 ## Technology Stack
-The following technologies are utilized in the project:
-- **FastAPI**: A modern web framework for building APIs with Python 3.6+ based on standard Python-type hints. It allows automatic generation of OpenAPI and JSON Schema documentation.
-- **OpenAI API**: For AI-driven functionalities in study assistance provided by the OpenAI agents.
-- **Python**: As the primary programming language for implementing the backend logic.
-- **Docker (assumed)**: Commonly used for containerizing applications, ensuring consistent environments for deployment (not explicitly mentioned but inferred).
+- **FastAPI**: The primary web framework to create APIs.
+- **OpenAI Agents**: Integration for advanced capabilities related to data processing and response generation.
+- **JSON**: Likely used for data interchange between the client and server, typical in API communications.
 
 ## Component Architecture
-The primary components of the system include:
-
-1. **FastAPI Backend**: 
-   - **Responsibilities**: It acts as the server, handling HTTP requests from clients, processing data, and interacting with the agents for AI responses. It includes various APIs for topic management, session handling, and study metrics.
-
-2. **OpenAI Agents**: 
-   - **Responsibilities**: These agents perform behind-the-scenes processing, leveraging AI functionalities to provide intelligent responses and insights based on user interactions.
-
-### Interaction
-FastAPI facilitates requests to and from OpenAI agents through multiple endpoints, allowing for a rich set of functionalities focused on study management, tracking, and support.
+- **FastAPI Backend**: 
+  - Responsible for route management, request handling, and response formulation.
+  - Interfaces with OpenAI and external clients for request processing.
+  
+- **Agents**: 
+  - Responsible for interacting with data sources or services to retrieve and process information based on incoming requests.
 
 ## Data Architecture
-Data management patterns and storage solutions were not explicitly detailed in the provided information, but given the nature of FastAPI and its likely interaction with databases:
-- **Relational/NoSQL Database**: Likely used for storing topics, sessions, and user data, although specific implementations are not observed in the codebase.
+The architecture suggests the use of endpoints that handle various facets of study data, including topics, sessions, and associated metrics. Although specific database schemas are not disclosed in the diagram or codebase, the interactions imply structured data management.
 
 ## API Architecture
-A variety of API endpoints are defined, as indicated in the architecture diagram, including:
-- **_api_create_topic**: Manages the creation of new study topics.
-- **_api_current_session**: Retrieves the currently active study session.
-- **_api_study_goals**: Allows users to set or update their study goals.
-- **_api_upload_study_material**: Facilitates uploading educational content.
+The API endpoints listed provide a clear structure for interaction, adhering to RESTful conventions. They allow for creating, reading, and updating study-related resources, thus facilitating a robust API layer for clients.
 
 ## Security Architecture
-No specific security details, such as authentication or authorization mechanisms, were noted in the current codebase. Implementing security measures like API keys or OAuth for the OpenAI integration would be advisable.
+No explicit security patterns are outlined in the diagram. However, given that the system presents a web service, standard practices would include authentication mechanisms, such as OAuth2 or token-based authentication, which are common for securing FastAPI applications.
 
 ## Deployment Architecture
-While not specified in the provided details, common practices such as:
-- **Containerization**: Likely assumed with Docker for running the FastAPI application.
-- **Cloud Deployment**: Potentially using platforms like AWS, Azure, or Google Cloud for hosting the application and handling scaling.
+There are no specific details provided about the deployment architecture or CI/CD processes in the current documentation. However, the integration with local services implies a possible development environment setup.
 
 ## Architectural Patterns
-- **Microservices Architecture**: The system demonstrates a microservices-like approach where FastAPI and OpenAI agents are separated, allowing for independent scalability and maintenance.
-- **RESTful API**: The design heavily relies on REST principles, utilizing endpoints for CRUD operations.
+The system exhibits a microservices-like architecture, with FastAPI acting as a service layer that can scale independently alongside the APIs it exposes. Additionally, there is evidence of the layering pattern, logically separating the API layer from the service logic.
 
 ## Key Design Decisions
-1. **Use of FastAPI**: Chosen for its performance and ease of creating APIs with async capabilities, which is crucial for handling multiple requests efficiently.
-2. **Integration with OpenAI**: Leveraging cutting-edge AI technology to enhance user interaction and provide intelligent study support, aligning with modern educational technology trends.
+1. **Use of FastAPI**: The choice indicates a preference for performance and ease of use for creating APIs.
+2. **External Agent Integration**: The design supports extensibility by allowing external agents to interact with the backend, fostering a modular architecture.
+3. **RESTful Endpoints**: The architecture employs REST principles, facilitating clear and meaningful interactions between the frontend and backend systems. 
 
-This architectural documentation aims to capture the essence of the project based on the codebase analysis and should serve as a reference for current and future developers working on the project.
+This documentation is based solely on the components and relationships present in the provided codebase and resources.
