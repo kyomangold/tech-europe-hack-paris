@@ -1,6 +1,6 @@
 # Best-In-Class – AI Tutor
 
-An AI-powered tutor that helps students master any subject using the Feynman technique - learning by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words. The AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode" the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, notes, and more).
+An AI-powered tutor that helps students master any subject using the Feynman technique - learning by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words. The AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode" the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, notes, etc.).
 
 ![Best-In-Class - AI Tutor Screenshot](./best_in_class_ai_feynman.png)
 
