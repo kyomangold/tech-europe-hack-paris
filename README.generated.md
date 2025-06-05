@@ -1,3 +1,6 @@
+Based on the information gathered from the existing README and the project structure, here is an updated and structured README.md for the project.
+
+```markdown
 # Best-In-Class – AI Tutor
 
 An AI-powered tutor that helps students master any subject using the Feynman technique - learning by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words. The AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode," the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, notes, and more).
@@ -25,27 +28,27 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
   - `hooks/`: Custom React hooks
 
 ## Features
-- AI-powered tutoring using the Feynman technique
-- Real-time voice-based interactions
-- Feedback and targeted questioning from the AI
-- Teacher Mode to search the web and retrieve information
-- Accessibility features via live transcription
+- Real-time voice-based interactions for learning
+- AI-based feedback and guidance using the Feynman technique
+- Integration with OpenAI Agents API for enhanced information retrieval
+- Accessibility improvements with live transcription displays
 
 ## Technology Stack
 - Python
 - FastAPI
-- LiveKit
-- Beyond Presence
 - Next.js
 - TypeScript
 - Tailwind CSS
+- LiveKit
+- Beyond Presence
 
 ## Prerequisites
 - Python 3.x
-- Node.js (for frontend)
-- npm or yarn (for managing frontend packages)
+- Node.js
+- npm or yarn for frontend dependencies
 
 ## Installation
+
 ### Backend Setup
 1. Create and activate a Python virtual environment:
     ```bash
@@ -59,7 +62,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     pip install livekit-plugins-bey
     ```
 
-3. Create `.env` file in the root directory:
+3. Create a `.env` file in the root directory:
     ```plaintext
     # OpenAI API  
     OPENAI_API_KEY=sk-...
@@ -74,7 +77,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     BEY_AVATAR_ID=...
     ```
 
-4. Run the beyond presence avatar backend:
+4. Run the Beyond Presence avatar backend:
     ```bash
     python agent.py dev
     ```
@@ -100,39 +103,31 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     uvicorn fastapi_backend:app --reload
     ```
 
-## Configuration
-### Environment Variables
-- Ensure the `.env` file contains the necessary keys mentioned in the "Installation" section.
-
 ## Running the Application
-- For the backend, use:
-    ```bash
-    python agent.py dev
-    ```
-- For the frontend, start the development server as mentioned in the "Installation" section.
-
+- For development, follow the setup instructions to run both the backend and frontend concurrently.
+  
 ## API Documentation
-*Information not found in codebase*
+Not found in codebase
 
 ## Project Structure
-- The project has a clear directory structure as mentioned in the Project Structure section.
+The project is divided into a backend and frontend with clearly separated files for better maintainability. For frontend components, a structure using Next.js facilitates easy routing and page management.
 
 ## Testing
-*Information not found in codebase*
+Not found in codebase
 
 ## Deployment
-*Information not found in codebase*
+Not found in codebase
 
 ## Contributing
-Contributions are welcome. Please check the guidelines in the repository.
-
-## Contributors 
+Contributors include:
 - Kyo Mangold (https://github.com/kyomangold)
 - Daniel Gisler (https://github.com/gislerda)
 
 ## License
-*Information not found in codebase*
+Not found in codebase
+```
 
----
-
-For sections where information was not found in the codebase (like API Documentation, Testing, Deployment, and License), it is recommended to add relevant details to enhance the README further.
+### Suggestions for Additional Information
+- The API documentation section should ideally provide REST endpoints and their descriptions.
+- Information about testing frameworks, commands, and strategies should be included if tests are present.
+- License information should be provided if a LICENSE file exists in the codebase.
