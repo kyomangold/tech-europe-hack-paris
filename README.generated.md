@@ -1,37 +1,33 @@
-Based on the information gathered from the existing README and the project structure, here is an updated and structured README.md for the project.
-
-```markdown
 # Best-In-Class – AI Tutor
 
-An AI-powered tutor that helps students master any subject using the Feynman technique - learning by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words. The AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode," the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, notes, and more).
+An AI-powered tutor that helps students master any subject using the Feynman technique - learning by teaching. The platform features a Next.js frontend and a Python backend with LiveKit and Beyond Presence integration for real-time, voice-based interactions. Students explain concepts in their own words. The AI provides feedback, guidance, and targeted questions to deepen understanding. In "Teacher Mode" the AI can leverage the OpenAI Agents API to search the web for more information or retrieve knowledge from a provided PDF (e.g., textbook, lecture slides, class notes, and more).
 
 ![Best-In-Class - AI Tutor Screenshot](./best_in_class_ai_feynman.png)
 
 ## Project Structure
 
 ### Backend
-- `agent.py`: Main LiveKit agent implementation with Beyond Presence
-- `fastapi_backend.py`: Main backend implementation to connect everything to the frontend
-- `agents_openai.py`: OpenAI agent implementation
-- `requirements.txt`: Python dependencies
+- `agent.py`: Main LiveKit agent implementation with Beyond Presence.
+- `fastapi_backend.py`: Main backend implementation to connect everything to the frontend.
+- `agents_openai.py`: OpenAI agent implementation.
+- `requirements.txt`: Python dependencies.
 
 ### Frontend
-- Next.js application with TypeScript and Tailwind CSS
+- Next.js application with TypeScript and Tailwind CSS.
 - Components:
-  - `NoAgentNotification.tsx`: UI for when no agent is available
-  - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility
-  - `CloseIcon.tsx`: UI component for closing modals
+  - `NoAgentNotification.tsx`: UI for when no agent is available.
+  - `TranscriptionView.tsx`: Real-time transcription display for improved accessibility.
+  - `CloseIcon.tsx`: UI component for closing modals.
 - App Structure:
-  - `app/page.tsx`: Main application page
-  - `app/layout.tsx`: Root layout component
-  - `app/api/`: API routes
-  - `hooks/`: Custom React hooks
+  - `app/page.tsx`: Main application page.
+  - `app/layout.tsx`: Root layout component.
+  - `app/api/`: API routes.
+  - `hooks/`: Custom React hooks.
 
 ## Features
-- Real-time voice-based interactions for learning
-- AI-based feedback and guidance using the Feynman technique
-- Integration with OpenAI Agents API for enhanced information retrieval
-- Accessibility improvements with live transcription displays
+- AI-driven tutoring using the Feynman technique.
+- Real-time voice-based interactions with students.
+- Teacher Mode that utilizes OpenAI Agents for enhanced capabilities.
 
 ## Technology Stack
 - Python
@@ -45,7 +41,7 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
 ## Prerequisites
 - Python 3.x
 - Node.js
-- npm or yarn for frontend dependencies
+- npm
 
 ## Installation
 
@@ -63,15 +59,15 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     ```
 
 3. Create a `.env` file in the root directory:
-    ```plaintext
+    ```env
     # OpenAI API  
     OPENAI_API_KEY=sk-...
-
+    
     # Livekit API  
     LIVEKIT_URL=...
     LIVEKIT_API_KEY=...
     LIVEKIT_API_SECRET=...
-
+    
     # Beyond Presence API
     BEY_API_KEY=sk-...
     BEY_AVATAR_ID=...
@@ -104,30 +100,28 @@ An AI-powered tutor that helps students master any subject using the Feynman tec
     ```
 
 ## Running the Application
-- For development, follow the setup instructions to run both the backend and frontend concurrently.
-  
-## API Documentation
-Not found in codebase
+Follow the installation steps above to run both the backend and frontend applications in development mode.
 
-## Project Structure
-The project is divided into a backend and frontend with clearly separated files for better maintainability. For frontend components, a structure using Next.js facilitates easy routing and page management.
+## API Documentation
+Information not found in codebase.
 
 ## Testing
-Not found in codebase
+Information not found in codebase.
 
 ## Deployment
-Not found in codebase
+Information not found in codebase.
 
-## Contributing
-Contributors include:
+## Contributors 
 - Kyo Mangold (https://github.com/kyomangold)
 - Daniel Gisler (https://github.com/gislerda)
 
 ## License
-Not found in codebase
-```
+Not found in codebase.
 
-### Suggestions for Additional Information
-- The API documentation section should ideally provide REST endpoints and their descriptions.
-- Information about testing frameworks, commands, and strategies should be included if tests are present.
-- License information should be provided if a LICENSE file exists in the codebase.
+---
+
+### Suggestions for Improvement
+- Include API documentation detailing main endpoints.
+- Document testing procedures and any related framework information.
+- Provide deployment instructions if applicable. 
+- Add details about the license used for the project.
