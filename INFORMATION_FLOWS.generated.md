@@ -1,37 +1,43 @@
 # Information Flows Overview
-This document describes the information flows within the application and its interactions with external systems. The flows involve a FastAPI backend and several external endpoints and variables.
+This documentation provides an overview of the information flows within the application as derived from its codebase. It details the interactions and data exchanges between various components, including the backend and external systems.
 
 ## Information Flows
 
-1. **Flow from FastAPI Backend to Agents OpenAI**
-   - **Source:** FastAPI Backend
-   - **Destination:** Agents OpenAI
-   - **Data Type:** Not explicitly identified (may include user inputs or instructions)
-   - **Purpose:** To process requests or data related to the agents.
+1. **Flow from fastapi_backend to agents_openai**
+   - **Source:** fastapi_backend
+   - **Destination:** agents_openai
+   - **Data Type:** Unknown
+   - **Purpose:** Unknown (inferred interaction with external agent interface)
 
-2. **Flow from Agent to External Variables (Multiple)**
-   - **Source:** Agent
-   - **Destination:** Various external identifiers (metadata, mode, topic_id)
-   - **Data Type:** Not explicitly identified
-   - **Purpose:** To communicate configuration or context data for processing with external systems.
+2. **Flow from agent to multiple external APIs**
+   - **Source:** agent
+   - **Destination:** metadata (external), mode (external), topic_id (external)
+   - **Data Type:** Unknown
+   - **Purpose:** Provides contextual information to the external systems.
 
-3. **Flow from FastAPI Backend to External API Endpoints (Multiple)**
-   - **Source:** FastAPI Backend
-   - **Destination:** Various external API endpoints (_api_connection_details, _api_create_topic, _api_current_session, etc.)
-   - **Data Type:** Not explicitly identified
-   - **Purpose:** To facilitate various functionalities such as creating topics, fetching session details, or managing study materials through external APIs.
-
-4. **Flow from FastAPI Backend to Localhost**
-   - **Source:** FastAPI Backend
-   - **Destination:** http://localhost:3000
-   - **Data Type:** Not explicitly identified
-   - **Purpose:** To interact with a local service, potentially for development or testing purposes.
-
-5. **Flow from FastAPI Backend to External Identifiers (Multiple)**
-   - **Source:** FastAPI Backend
-   - **Destination:** Various external variables (lesson_id, session_id, metadata, mode, topic_id)
-   - **Data Type:** Not explicitly identified
-   - **Purpose:** To pass context data relevant to the ongoing processes or workflows.
+3. **Flow from fastapi_backend to various external API endpoints**
+   - **Source:** fastapi_backend
+   - **Destination:** 
+     - _api_connection_details (external)
+     - _api_create_topic (external)
+     - _api_current_session (external)
+     - _api_current_topic (external)
+     - _api_give_more_info (external)
+     - _api_improvement_areas (external)
+     - _api_next_up_topics (external)
+     - _api_study_goals (external)
+     - _api_study_metrics (external)
+     - _api_study_planner (external)
+     - _api_study_sessions (external)
+     - _api_topic_progress (external)
+     - _api_topics (external)
+     - _api_upload_study_material (external)
+     - http://localhost:3000 (external)
+     - lesson_id (external)
+     - session_id (external)
+     - topic_id (external)
+   - **Data Type:** Various
+   - **Purpose:** Sends various types of data related to study sessions, topics, and metrics to the respective endpoints for processing.
 
 ```mermaid
 flowchart TD
