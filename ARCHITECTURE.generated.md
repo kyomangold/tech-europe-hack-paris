@@ -1,70 +1,70 @@
 # Architecture Overview
-The system is architected as a web application utilizing a FastAPI backend that interacts with various external components to perform its functions. The architecture is designed to support educational goals through managing topics, study sessions, and materials. The system enables users to create, manage, and retrieve information related to their study experiences via API calls.
+The architecture consists of a backend service built with FastAPI that serves as the central controller for handling various operations and interactions with external systems. The backend connects to several endpoints that facilitate the management of study topics, session details, and educational goals, showcasing an API-centric approach.
 
 ## System Architecture Diagram
-![System Architecture Diagram](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYAAAAoJCAIAAAD7g8w7AAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAB7CAAAewgFu0HU+AAAAJ0lEQVR42mJQxywUjDeQQGAA4Wkp56Ri+QAAAAAAElFTkSuQmCC)
+![Architecture Diagram](diagrams/architecture_diagram.png)
 
-In the architecture diagram, the following components are illustrated:
+### Components Explained
+- **FastAPI Backend**: This is the central component that processes requests and integrates with all other external modules. It acts as the API layer for the application.
 
-- **FastAPI Backend**: The core of the application, responsible for handling client requests and providing API endpoints for various functionalities.
-- **External Agents**: These interact with the backend to perform operations related to topics, sessions, and study metrics. Each external agent is denoted by dashed arrows, indicating they operate outside the main backend flow.
-- **API Connections**: The backend includes numerous API endpoints for functionality, such as:
-  - `_api_current_topic`
-  - `_api_study_goals`
-  - `_api_upload_study_material`
-These APIs facilitate communication with the frontend and external systems.
+- **Agents OpenAI**: Represents the integration point with OpenAI's API for AI-related functionalities, potentially facilitating tutoring or content generation.
+
+- **API Endpoints**: The FastAPI backend communicates with various endpoints to manage study topics and sessions. These endpoints include:
+    - `_api_connection_details`
+    - `_api_create_topic`
+    - `_api_current_session`
+    - `_api_current_topic`
+    - `_api_give_more_info`
+    - `_api_improvement_areas`
+    - `_api_next_up_topics`
+    - `_api_study_goals`
+    - `_api_study_metrics`
+    - `_api_study_planner`
+    - `_api_study_sessions`
+    - `_api_topic_progress`
+    - `_api_topics`
+    - `_api_upload_study_material`
+  
+These endpoints manage functionalities such as creating new study topics, retrieving current session details, and uploading study materials.
+
+- **External Connections**: The `agent` component indicates interactions with various elements, likely representing connections to external data sources or APIs.
 
 ## Technology Stack
-The following technologies, frameworks, and libraries are utilized within the codebase:
-
-- **FastAPI**: A modern web framework for building APIs with Python, chosen for its speed and ease of use.
-- **OpenAI API**: Integrated for enhancing the educational experience by leveraging AI capabilities.
-- **Databases**: While not specified in the architecture, database interactions are likely through ORM or direct querying, based on common practices in FastAPI applications.
-- **Frontend Framework (assumed)**: The architecture includes references to an external frontend API on `http://localhost:3000`, indicating a possible integration with a JavaScript-based front-end framework (though specifics are not confirmed).
+- **Backend Framework**: FastAPI - A modern web framework for building APIs with Python based on standard Python type hints.
+- **AI Integration**: OpenAI API - Used for generating intelligent responses or performing complex operations related to study materials and sessions.
 
 ## Component Architecture
-### Main Components:
-1. **FastAPI Backend**: 
-   - Handles API requests and business logic.
-   - Integrates with external agents for functionality.
-   - Exposes multiple API endpoints for CRUD operations on topics and studies.
-  
-2. **External Agents**:
-   - Various external agents interact with the backend for specific tasks (e.g., fetching metadata, handling session data, managing user study goals).
-  
-### Interaction:
-The interactions among the components are primarily through RESTful API calls. The backend communicates with external services using defined endpoints, allowing for modular interactions with other components in the system.
+1. **FastAPI Backend**:
+    - **Responsibilities**: Manages API requests, interacts with the OpenAI API, and serves as the mediator between the frontend (if applicable) and external integrations. It handles the logic for various study-related endpoints.
+    - **Interaction**: Communicates with the `Agents OpenAI` and various study-related API endpoints.
+
+2. **Agents OpenAI**:
+    - **Responsibilities**: Provides access to OpenAI's functionalities, leveraging AI capabilities for enhancing user interactions, such as generating study materials or recommendations.
 
 ## Data Architecture
-The codebase does not provide explicit details on data storage solutions or database schemas. However, it can be inferred that there is a need for persistent storage for:
-- User study topics
-- Session data
-- Metrics associated with study goals
-
-Data flow likely involves REST API calls to retrieve and store this information.
+No specific database schemas or data storage solutions were mentioned in the provided information. The backend likely interacts with an external data storage or a database through the endpoints that manage session, topic, and material operations.
 
 ## API Architecture
-The system defines several critical API endpoints, primarily around study topics and sessions. Some of these include:
-- **`/api_current_topic`**: Retrieves the current topic being studied.
-- **`/api_study_goals`**: Manages user-defined study objectives.
-- **`/api_upload_study_material`**: Handles file uploads related to study resources.
+The backend exposes several RESTful API endpoints focused on study management:
+- **Main Endpoints**:
+    - **_api_create_topic**: To create new topics.
+    - **_api_current_session**: To get details about the current study session.
+    - **_api_give_more_info**: Enhances content with additional information.
+    
+No authentication mechanisms were specified in the provided overview.
 
 ## Security Architecture
-No specific security implementations or measures are observed in the current codebase. However, it is common practice to implement authentication mechanisms such as OAuth2 or JWT tokens in API-based architectures, especially when user data is involved.
+There is no specific information available regarding the security measures or authentication protocols within the existing codebase.
 
 ## Deployment Architecture
-The deployment aspects are not detailed within the provided codebase or initial analysis. However, given the nature of a FastAPI application, it could be containerized using Docker, and deployed on cloud platforms like AWS or Azure for scalability and availability.
+The deployment architecture details are not provided; however, it can be inferred that the FastAPI application may be containerized or deployed on a cloud service for accessibility.
 
 ## Architectural Patterns
-The codebase exhibits features of a layered architecture, where:
-- The FastAPI acts as the controller for handling requests.
-- The different services (external agents) fulfill various responsibilities in a modular manner.
-
-This separation allows for easier maintenance and potential scaling of the application.
+- **API-Centric Architecture**: The design primarily revolves around RESTful API principles, promoting loose coupling and flexibility in interactions between the backend and external services.
 
 ## Key Design Decisions
-- The choice of FastAPI as the primary framework provides asynchronous capabilities, which may influence performance positively compared to traditional frameworks.
-- The integration with external services reflects a microservices-oriented approach, allowing for the extensibility of the application through independent components.
-- The use of RESTful APIs aids in standardization and interoperability with various clients and services.
+- Utilization of FastAPI for its performance capabilities and ease of integrating with asynchronous code.
+- Leveraging OpenAI for advanced AI functionalities, enabling a smart educational interface.
+- Clear separation of concerns through the use of dedicated API endpoints for specific study management tasks. 
 
-This documentation provides a comprehensive overview of the architectural design and components as extracted from the existing codebase. Further details may be added as additional insights are made available or further code examination occurs.
+This documentation provides a structural overview based on the available analysis and components observed in the codebase. Further exploration may yield additional details, especially around data storage and security measures.
