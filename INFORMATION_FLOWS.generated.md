@@ -1,132 +1,61 @@
 # Information Flows Overview
-This document outlines the information flows within the application, highlighting the sources, destinations, data types, and purposes of each flow. The context primarily revolves around interactions between a backend service and various external APIs or components.
+This document outlines the various information flows present in the application, detailing how data is exchanged between components and with external systems.
 
 ## Information Flows
 
-1. **Flow from FastAPI Backend to Agents OpenAI**
-   - **Source:** fastapi_backend
-   - **Destination:** agents_openai
-   - **Data Type:** Information request/response (exact type unspecified)
-   - **Purpose:** Interaction with OpenAI agents for processing or generating information.
+1. **Flow from `fastapi_backend` to `agents_openai`**
+   - **Source**: `fastapi_backend`
+   - **Destination**: `agents_openai`
+   - **Data Type**: Unknown (implementation specific)
+   - **Purpose**: To process information using OpenAI's agents.
 
-2. **Flow indicating External Relationships (Agent)**
-   - **Source:** agent
-   - **Destination:** metadata (external)
-   - **Data Type:** Metadata
-   - **Purpose:** Unknown, but likely related to contextual information for processing.
+2. **Flow from `agent` to various metadata entities**
+   - **Source**: `agent`
+   - **Destination**: `metadata`
+   - **Data Type**: External metadata
+   - **Purpose**: To access or manipulate external metadata relevant to the application's context.
 
-3. **Flow indicating External Relationships (Agent)**
-   - **Source:** agent
-   - **Destination:** mode (external)
-   - **Data Type:** Mode information
-   - **Purpose:** Unknown; may refer to operational mode or state.
+3. **Flow from `agent` to various mode entities**
+   - **Source**: `agent`
+   - **Destination**: `mode`
+   - **Data Type**: External mode information
+   - **Purpose**: To configure or retrieve operational modes for the agent's functionalities.
 
-4. **Flow indicating External Relationships (Agent)**
-   - **Source:** agent
-   - **Destination:** topic_id (external)
-   - **Data Type:** Topic identifier
-   - **Purpose:** Unknown; likely used for referencing specific topics.
+4. **Flow from `agent` to `topic_id`**
+   - **Source**: `agent`
+   - **Destination**: `topic_id`
+   - **Data Type**: External topic identification
+   - **Purpose**: To work with specific topics relevant to the operational context.
 
-5. **Multiple Flows from FastAPI Backend to various APIs**
-   - **Source:** fastapi_backend
-   - **Destination:** _api_connection_details (external)
-   - **Data Type:** Connection details
-   - **Purpose:** To establish or manage connections.
-   
-   - **Source:** fastapi_backend
-   - **Destination:** _api_create_topic (external)
-   - **Data Type:** Topic creation request
-   - **Purpose:** To create new topics in the system.
+5. **Multiple flows from `fastapi_backend` to external API endpoints**
+   - **Source**: `fastapi_backend`
+   - **Destination**: Various endpoints such as `_api_connection_details`, `_api_create_topic`, `_api_current_session`, etc.
+   - **Data Type**: External API calls
+   - **Purpose**: To perform a variety of operations related to topics, sessions, metrics, goals, and material uploads.
 
-   - **Source:** fastapi_backend
-   - **Destination:** _api_current_session (external)
-   - **Data Type:** Session information
-   - **Purpose:** To retrieve the current session details.
+6. **Flow from `fastapi_backend` to external host**
+   - **Source**: `fastapi_backend`
+   - **Destination**: `http://localhost:3000`
+   - **Data Type**: Unknown (typically HTTP request)
+   - **Purpose**: To communicate with a local frontend or service.
 
-   - **Source:** fastapi_backend
-   - **Destination:** _api_current_topic (external)
-   - **Data Type:** Current topic information
-   - **Purpose:** To get information on the current topic being processed.
+7. **Flow from `fastapi_backend` to `lesson_id`**
+   - **Source**: `fastapi_backend`
+   - **Destination**: `lesson_id`
+   - **Data Type**: External lesson identification
+   - **Purpose**: To link or retrieve specific lesson details.
 
-   - **Source:** fastapi_backend
-   - **Destination:** _api_give_more_info (external)
-   - **Data Type:** Additional information request
-   - **Purpose:** To request additional context or details.
+8. **Flow from `fastapi_backend` to `session_id`**
+   - **Source**: `fastapi_backend`
+   - **Destination**: `session_id`
+   - **Data Type**: External session information
+   - **Purpose**: To manage or track session-related data.
 
-   - **Source:** fastapi_backend
-   - **Destination:** _api_improvement_areas (external)
-   - **Data Type:** Improvement areas
-   - **Purpose:** To identify areas needing enhancement.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_next_up_topics (external)
-   - **Data Type:** Topic schedule
-   - **Purpose:** To retrieve upcoming topics for processing.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_study_goals (external)
-   - **Data Type:** Study goals
-   - **Purpose:** To set or query study objectives.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_study_metrics (external)
-   - **Data Type:** Study metrics
-   - **Purpose:** To gather metrics related to studying.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_study_planner (external)
-   - **Data Type:** Study planning information
-   - **Purpose:** To assist in organizing and planning study activities.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_study_sessions (external)
-   - **Data Type:** Study session information
-   - **Purpose:** To obtain details about study sessions.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_topic_progress (external)
-   - **Data Type:** Topic progress information
-   - **Purpose:** To track progress on specific topics.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_topics (external)
-   - **Data Type:** Topics list or information
-   - **Purpose:** To retrieve a list of topics.
-
-   - **Source:** fastapi_backend
-   - **Destination:** _api_upload_study_material (external)
-   - **Data Type:** Study material upload request
-   - **Purpose:** To upload study materials for the user's reference.
-
-   - **Source:** fastapi_backend
-   - **Destination:** http___localhost_3000 (external)
-   - **Data Type:** Unknown
-   - **Purpose:** Likely a connection to a local service or web application for further processing.
-
-   - **Source:** fastapi_backend
-   - **Destination:** lesson_id (external)
-   - **Data Type:** Lesson identifier
-   - **Purpose:** Unknown; possibly to fetch or identify lessons.
-
-   - **Source:** fastapi_backend
-   - **Destination:** metadata (external)
-   - **Data Type:** Metadata
-   - **Purpose:** Similar to previous metadata flows; context-dependent information.
-
-   - **Source:** fastapi_backend
-   - **Destination:** mode (external)
-   - **Data Type:** Mode information
-   - **Purpose:** Similar to previous mode flows; operational context.
-
-   - **Source:** fastapi_backend
-   - **Destination:** session_id (external)
-   - **Data Type:** Session identifier
-   - **Purpose:** Unknown; possibly used for tracking user sessions.
-
-   - **Source:** fastapi_backend
-   - **Destination:** topic_id (external)
-   - **Data Type:** Topic identifier
-   - **Purpose:** Similar to the earlier topic_id flows; related to topic references.
+9. **Reoccurring flows to `metadata`, `mode`, and `topic_id` from `fastapi_backend`**
+   - **Source**: `fastapi_backend`
+   - **Destination**: Various identifiers
+   - **Data Type**: External metadata, mode, and topic identifiers
+   - **Purpose**: To consistently manage and manipulate contextual information.
 
 ```mermaid
 flowchart TD
