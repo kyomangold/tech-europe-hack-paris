@@ -29,7 +29,6 @@ conversation_logger.addHandler(file_handler)
 
 load_dotenv()
 
-
 class Assistant(Agent):
     def __init__(self) -> None:
         super().__init__(instructions="You are a helpful voice AI tutor that uses the Feynman technique to help the student learn by letting them explain the topic in their own words to you.")
@@ -192,21 +191,10 @@ async def entrypoint(ctx: agents.JobContext):
         room=ctx.room,
         agent=agent,
         room_input_options=RoomInputOptions(
-            # LiveKit Cloud enhanced noise cancellation
-            # - If self-hosting, omit this parameter
-            # - For telephony applications, use `BVCTelephony` for best results
             noise_cancellation=noise_cancellation.BVC(), 
         ),
         room_output_options=RoomOutputOptions(audio_enabled=False),
     )
-
-    
-
-    # await session.generate_reply(
-    #     instructions="Greet the user and offer your assistance."
-    # )
-    
-    
 
 
 if __name__ == "__main__":
